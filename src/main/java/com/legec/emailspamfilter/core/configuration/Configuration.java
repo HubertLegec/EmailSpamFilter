@@ -1,4 +1,4 @@
-package com.legec.emailspamfilter.core;
+package com.legec.emailspamfilter.core.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
