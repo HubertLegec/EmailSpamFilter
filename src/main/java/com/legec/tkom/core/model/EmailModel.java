@@ -1,4 +1,4 @@
-package com.legec.emailspamfilter.core.model;
+package com.legec.tkom.core.model;
 
 public class EmailModel {
     private EmailHeader emailHeader;

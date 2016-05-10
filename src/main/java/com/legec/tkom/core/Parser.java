@@ -1,4 +1,4 @@
-package com.legec.emailspamfilter.core;
+package com.legec.tkom.core;
 
 public class Parser {
 
