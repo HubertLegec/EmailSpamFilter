@@ -1,10 +1,8 @@
 package com.legec.tkom.core.model;
 
 public class Position {
-    private int lastLine = 1;
-    private int lastPositionInLine = 1;
-    private int line = 1;
-    private int positionInLine = 1;
+    private int line = 0;
+    private int positionInLine = 0;
 
     public Position() {
     }
@@ -17,28 +15,21 @@ public class Position {
         return positionInLine;
     }
 
-    public int getLastLine() {
-        return lastLine;
-    }
-
-    public int getLastPositionInLine() {
-        return lastPositionInLine;
-    }
-
     public void nextLine(){
-        lastLine = line;
-        lastPositionInLine = positionInLine;
         line++;
-        positionInLine = 1;
+        positionInLine = 0;
     }
 
     public void nextPositionInLine(){
-        lastPositionInLine = positionInLine;
         positionInLine++;
     }
 
     public void reset() {
-        line = 1;
-        positionInLine = 1;
+        line = 0;
+        positionInLine = 0;
+    }
+
+    public boolean isLineBegin(){
+        return positionInLine == 0;
     }
 }

@@ -5,9 +5,10 @@ import com.legec.tkom.core.model.Position;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public interface InputTextReader {
+interface InputTextReader {
     boolean hasNext();
     char getNextCharacter();
+    char seeNextCharacter();
     Position getPosition();
     void setInputFile(Path inputFilePath) throws IOException;
 }

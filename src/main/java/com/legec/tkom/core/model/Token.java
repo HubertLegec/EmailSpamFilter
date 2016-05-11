@@ -3,24 +3,25 @@ package com.legec.tkom.core.model;
 public class Token {
     private TokenType tokenType;
     private String value = null;
-    private int line;
-    private int position;
+    private TokenPosition position;
 
-    public Token(TokenType tokenType, int line, int position) {
+    public Token(TokenType tokenType, TokenPosition position) {
         this.tokenType = tokenType;
-        this.line = line;
         this.position = position;
     }
 
-    public Token(String value, int line, int position) {
+    public Token(TokenType tokenType, String value, TokenPosition position) {
         this.value = value;
-        this.tokenType = TokenType.VALUE;
-        this.line = line;
+        this.tokenType = tokenType;
         this.position = position;
     }
 
     public TokenType getTokenType() {
         return tokenType;
+    }
+
+    public TokenPosition getPosition() {
+        return position;
     }
 
     public String getValue() {

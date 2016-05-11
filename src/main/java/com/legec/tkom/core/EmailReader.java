@@ -25,10 +25,16 @@ class EmailReader implements InputTextReader{
 
     @Override
     public char getNextCharacter(){
-            char toReturn = lines[position.getLine() - 1]
-                    .charAt(position.getPositionInLine() - 1);
+            char toReturn = lines[position.getLine()]
+                    .charAt(position.getPositionInLine());
             updatePosition();
             return toReturn;
+    }
+
+    @Override
+    public char seeNextCharacter(){
+        return lines[position.getLine()]
+                .charAt(position.getPositionInLine());
     }
 
     @Override
@@ -41,12 +47,23 @@ class EmailReader implements InputTextReader{
         return position;
     }
 
+    public void setLines(String[] lines){
+        this.lines = lines;
+        position.reset();
+        if(lines.length > 0 && lines[0].length() > 0){
+            addLinesEnds();
+            hasNext = true;
+        } else {
+            hasNext = false;
+        }
+    }
+
     private void updatePosition(){
         int positionInLine = position.getPositionInLine();
         int lineNumber = position.getLine();
-        if(positionInLine < lines[lineNumber - 1].length()){
+        if(positionInLine < lines[lineNumber].length() - 1){
             position.nextPositionInLine();
-        } else if (lineNumber < lines.length){
+        } else if (lineNumber < lines.length - 1){
             position.nextLine();
         } else {
             hasNext = false;

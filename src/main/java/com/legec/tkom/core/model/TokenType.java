@@ -1,22 +1,27 @@
 package com.legec.tkom.core.model;
 
 public enum TokenType {
-    DATE("Date:", true, false),
-    FROM("From:", true, false),
-    TO("To:", true, false),
-    CC("Cc:", true, false),
-    BCC("Bcc:", true, false),
-    SUBJECT("Subject:", true, false),
-    DELIVERED_TO("Delivered-To:", true, false),
-    RECEIVED("Received:", true, false),
-    RETURN_PATH("Return-Path:", true, false),
-    MIME_VERSION("MIME-Version:", true, false),
-    CONTENT_TYPE("Content-Type:", true, false),
-    CONTENT_TRANSFER_ENCODING("Content-Transfer-Encoding:", true, false),
-    MESSAGE_ID("Message-ID:", true, false),
-    REPLY_TO("Reply-To:", true, false),
-    SENDER("Sender:", true, false),
-    VALUE("*", false, false);
+    DATE("Date", true, false),
+    FROM("From", true, false),
+    TO("To", true, false),
+    CC("Cc", true, false),
+    BCC("Bcc", true, false),
+    SUBJECT("Subject", true, false),
+    DELIVERED_TO("Delivered-To", true, false),
+    RECEIVED("Received", true, false),
+    RETURN_PATH("Return-Path", true, false),
+    MIME_VERSION("MIME-Version", true, false),
+    CONTENT_TYPE("Content-Type", true, false),
+    CONTENT_TRANSFER_ENCODING("Content-Transfer-Encoding", true, false),
+    MESSAGE_ID("Message-ID", true, false),
+    REPLY_TO("Reply-To", true, false),
+    SENDER("Sender", true, false),
+    BOUNDARY("boundary=", true, false),
+    STRING_VALUE("String value", false, false),
+    INDENTATION("Indentation", false, false),
+    NEW_LINE("New line", false, false),
+    COLON("Colon", false, false),
+    SEMICOLON("Semicolon", false, false);
 
 
     private String name;
