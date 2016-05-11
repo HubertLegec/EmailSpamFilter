@@ -47,7 +47,7 @@ class EmailReader implements InputTextReader{
         return position;
     }
 
-    public void setLines(String[] lines){
+    void setLines(String[] lines){
         this.lines = lines;
         position.reset();
         if(lines.length > 0 && lines[0].length() > 0){

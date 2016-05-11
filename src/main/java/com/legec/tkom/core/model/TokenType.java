@@ -1,52 +1,51 @@
 package com.legec.tkom.core.model;
 
 public enum TokenType {
-    DATE("Date", true, false),
-    FROM("From", true, false),
-    TO("To", true, false),
-    CC("Cc", true, false),
-    BCC("Bcc", true, false),
-    SUBJECT("Subject", true, false),
-    DELIVERED_TO("Delivered-To", true, false),
-    RECEIVED("Received", true, false),
-    RETURN_PATH("Return-Path", true, false),
-    MIME_VERSION("MIME-Version", true, false),
-    CONTENT_TYPE("Content-Type", true, false),
-    CONTENT_TRANSFER_ENCODING("Content-Transfer-Encoding", true, false),
-    MESSAGE_ID("Message-ID", true, false),
-    REPLY_TO("Reply-To", true, false),
-    SENDER("Sender", true, false),
-    BOUNDARY("boundary=", true, false),
-    STRING_VALUE("String value", false, false),
-    INDENTATION("Indentation", false, false),
-    NEW_LINE("New line", false, false),
-    COLON("Colon", false, false),
-    SEMICOLON("Semicolon", false, false);
+    //------ headers ------
+    DATE("Date"),
+    FROM("From"),
+    TO("To"),
+    CC("Cc"),
+    BCC("Bcc"),
+    SUBJECT("Subject"),
+    DELIVERED_TO("Delivered-To"),
+    RECEIVED("Received"),
+    RETURN_PATH("Return-Path"),
+    MIME_VERSION("MIME-Version"),
+    CONTENT_TYPE("Content-Type"),
+    CONTENT_TRANSFER_ENCODING("Content-Transfer-Encoding"),
+    CONTENT_DISPOSITION("Content-Disposition"),
+    MESSAGE_ID("Message-ID"),
+    REPLY_TO("Reply-To"),
+    SENDER("Sender"),
+    //------ headers values ------
+    ENCODING_BASE64("base64"),
+    ENCODING_QUOTED_PRINTABLE("quoted-printable"),
+    CONTENT_MULTIPART("multipart/[a-z]+"),
+    CONTENT_TEXT("text/[a-z]+"),
+    CONTENT_IMAGE("image/[a-z.]+"),
+    CONTENT_APPLICATION("application/[a-z+-]"),
+    BOUNDARY("boundary=\"\\S+\""),
+    CHARSET("charset=\"[0-9a-zA-Z-]+\""),
+    FILE_NAME("filename=\"\\S+\""),
+    //------ others ------
+    INDENTATION("\\t|' '{2,}(\\t|' ')*"),
+    SPACE(" "),
+    NEW_LINE("\\n"),
+    COLON(":"),
+    SEMICOLON(";"),
+    SEPARATOR("--\\S+"),
+    NUMBER("\\d+|(\\d+.\\d*)"),
+    STRING("[^;:\\n\\t\\s]|([^;:\\n\\t\\s]\\S*[^;:\\n\\t\\s])|(\"(.|\\n)*\")");
 
 
-    private String name;
-    private boolean isHeaderKey;
-    private boolean isBodyKey;
+    private String pattern;
 
-    TokenType(String name, boolean isHeaderKey, boolean isBodyKey){
-        this.name = name;
-        this.isHeaderKey = isHeaderKey;
-        this.isBodyKey = isBodyKey;
+    TokenType(String pattern){
+        this.pattern = pattern;
     }
 
-    public String getName(){
-        return name;
-    }
-
-    public boolean isHeaderKey() {
-        return isHeaderKey;
-    }
-
-    public boolean isBodyKey() {
-        return isBodyKey;
-    }
-
-    public boolean isValue(){
-        return !isHeaderKey && !isBodyKey;
+    public String getPattern(){
+        return pattern;
     }
 }

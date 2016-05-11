@@ -1,95 +1,135 @@
 package com.legec.tkom.core;
 
+import com.legec.tkom.core.exception.UnexpectedCharacterException;
 import com.legec.tkom.core.model.Token;
 import com.legec.tkom.core.model.TokenPosition;
 import com.legec.tkom.core.model.TokenType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+
+import static com.legec.tkom.core.Utils.*;
+import static com.legec.tkom.core.model.TokenType.*;
 
 class Lexer {
 
-    private static final Map<String, TokenType> HEADER_FIELDS = new HashMap<String, TokenType>(){
+    private static final Map<String, TokenType> CONST_HEADER_FIELDS_AND_VALUES = new HashMap<String, TokenType>(){
         {
-            put(TokenType.DELIVERED_TO.getName(), TokenType.DELIVERED_TO);
-            put(TokenType.FROM.getName(), TokenType.FROM);
-            put(TokenType.TO.getName(), TokenType.TO);
-            put(TokenType.BCC.getName(), TokenType.BCC);
-            put(TokenType.DATE.getName(),TokenType.DATE);
-            put(TokenType.CC.getName(), TokenType.CC);
-            put(TokenType.SUBJECT.getName(), TokenType.SUBJECT);
-            put(TokenType.RECEIVED.getName(), TokenType.RECEIVED);
-            put(TokenType.REPLY_TO.getName(), TokenType.REPLY_TO);
-            put(TokenType.RETURN_PATH.getName(), TokenType.RETURN_PATH);
-            put(TokenType.MIME_VERSION.getName(), TokenType.MIME_VERSION);
-            put(TokenType.CONTENT_TRANSFER_ENCODING.getName(), TokenType.CONTENT_TRANSFER_ENCODING);
-            put(TokenType.CONTENT_TYPE.getName(), TokenType.CONTENT_TYPE);
-            put(TokenType.MESSAGE_ID.getName(), TokenType.MESSAGE_ID);
-            put(TokenType.SENDER.getName(), TokenType.SENDER);
+            put(DELIVERED_TO.getPattern(), DELIVERED_TO);
+            put(FROM.getPattern(), FROM);
+            put(TO.getPattern(), TO);
+            put(BCC.getPattern(), BCC);
+            put(DATE.getPattern(),DATE);
+            put(CC.getPattern(), CC);
+            put(SUBJECT.getPattern(), SUBJECT);
+            put(RECEIVED.getPattern(), RECEIVED);
+            put(REPLY_TO.getPattern(), REPLY_TO);
+            put(RETURN_PATH.getPattern(), RETURN_PATH);
+            put(MIME_VERSION.getPattern(), MIME_VERSION);
+            put(CONTENT_TRANSFER_ENCODING.getPattern(), CONTENT_TRANSFER_ENCODING);
+            put(CONTENT_TYPE.getPattern(), CONTENT_TYPE);
+            put(CONTENT_DISPOSITION.getPattern(), CONTENT_DISPOSITION);
+            put(MESSAGE_ID.getPattern(), MESSAGE_ID);
+            put(SENDER.getPattern(), SENDER);
+            put(ENCODING_BASE64.getPattern(), ENCODING_BASE64);
+            put(ENCODING_QUOTED_PRINTABLE.getPattern(), ENCODING_QUOTED_PRINTABLE);
         }
     };
 
+    private static final Pattern BOUNDARY_PATTERN = Pattern.compile(BOUNDARY.getPattern());
+    private static final Pattern SEPARATOR_PATTERN = Pattern.compile(SEPARATOR.getPattern());
+    private static final Pattern NUMBER_PATTERN = Pattern.compile(NUMBER.getPattern());
+    private static final Pattern CHARSET_PATTERN = Pattern.compile(CHARSET.getPattern());
+    private static final Pattern CONTENT_MULTIPART_PATTERN = Pattern.compile(CONTENT_MULTIPART.getPattern());
+    private static final Pattern CONTENT_TEXT_PATTERN = Pattern.compile(CONTENT_TEXT.getPattern());
+    private static final Pattern CONTENT_IMAGE_PATTERN = Pattern.compile(CONTENT_IMAGE.getPattern());
+    private static final Pattern CONTENT_APPLICATION_PATTERN = Pattern.compile(CONTENT_APPLICATION.getPattern());
+    private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME.getPattern());
+
     private InputTextReader inputTextReader;
+    private TokenPosition currentTokenPosition;
 
     Lexer(InputTextReader inputTextReader){
         this.inputTextReader = inputTextReader;
     }
 
-    public Token getNextToken(){
+    public Token getNextToken() throws UnexpectedCharacterException {
         if(!inputTextReader.hasNext()){
             return null;
         } else {
             char processedChar = inputTextReader.seeNextCharacter();
             if (inputTextReader.getPosition().isLineBegin() && isWhiteChar(processedChar)){
-                TokenPosition pos = getTokenPosition();
+                currentTokenPosition = getTokenPosition();
                 removeWhiteSpace();
-                return new Token(TokenType.INDENTATION, pos);
-            } else if(processedChar == '\n'){
-                TokenPosition pos = getTokenPosition();
+                return new Token(INDENTATION, currentTokenPosition);
+            } else if(processedChar == '\n') {
+                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
-                return new Token(TokenType.NEW_LINE, pos);
-            } else if(processedChar == ';'){
-                TokenPosition pos = getTokenPosition();
+                return new Token(NEW_LINE, currentTokenPosition);
+            } else if(processedChar == ';') {
+                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
-                return new Token(TokenType.SEMICOLON, pos);
+                return new Token(SEMICOLON, currentTokenPosition);
             } else if(processedChar == ':') {
-                TokenPosition pos = getTokenPosition();
+                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
-                return new Token(TokenType.COLON, pos);
+                return new Token(COLON, currentTokenPosition);
+            } else if(processedChar == ' ') {
+                currentTokenPosition = getTokenPosition();
+                inputTextReader.getNextCharacter();
+                return new Token(SPACE, currentTokenPosition);
             } else {
                 return processContent();
             }
         }
     }
 
-    private Token processContent(){
-        removeWhiteSpace();
-        TokenPosition pos = getTokenPosition();
+    private Token processContent() throws UnexpectedCharacterException {
+        currentTokenPosition = getTokenPosition();
         String element = buildElement();
-        return convertElementToToken(element, pos);
+        return convertElementToToken(element, currentTokenPosition);
     }
 
     private Token convertElementToToken(String element, TokenPosition position){
-        TokenType type = HEADER_FIELDS.get(element);
+        TokenType type = CONST_HEADER_FIELDS_AND_VALUES.get(element);
         if(type != null){
             return new Token(type, position);
         } else {
-            if(element.startsWith(TokenType.BOUNDARY.getName())){
-                return new Token(TokenType.BOUNDARY, extractValueFromBoundary(element), position);
+            Token tokenToReturn = null;
+            if(matchPattern(element, BOUNDARY_PATTERN)){
+                tokenToReturn = new Token(BOUNDARY, getStringBetweenQuotationMarks(element), position);
+            } else if(matchPattern(element, SEPARATOR_PATTERN)) {
+                tokenToReturn = new Token(SEPARATOR, element.substring(2, element.length() - 2), position);
+            } else if(matchPattern(element, NUMBER_PATTERN)) {
+                tokenToReturn = new Token(NUMBER, element, position);
+            } else if(matchPattern(element, CHARSET_PATTERN)) {
+                tokenToReturn = new Token(CHARSET, getStringBetweenQuotationMarks(element), position);
+            } else if(matchPattern(element, CONTENT_IMAGE_PATTERN)) {
+                tokenToReturn = new Token(CONTENT_IMAGE, position);
+            } else if(matchPattern(element, CONTENT_MULTIPART_PATTERN)) {
+                tokenToReturn = new Token(CONTENT_MULTIPART, position);
+            } else if(matchPattern(element, CONTENT_TEXT_PATTERN)) {
+                tokenToReturn = new Token(CONTENT_TEXT, position);
+            } else if(matchPattern(element, CONTENT_APPLICATION_PATTERN)) {
+
+            } else if(matchPattern(element, FILE_NAME_PATTERN)) {
+                tokenToReturn = new Token(FILE_NAME, position);
             } else {
-                return new Token(TokenType.STRING_VALUE, element, position);
+                tokenToReturn = new Token(STRING, element, position);
             }
+            return tokenToReturn;
         }
     }
 
-    private String buildElement(){
+    private String buildElement() throws UnexpectedCharacterException{
         StringBuilder builder = new StringBuilder();
         builderLoop(builder);
         /*
         Colon should break building of element only in case it is header field element
         If it is string value colon should be included
          */
-        if(inputTextReader.seeNextCharacter() == ':' && HEADER_FIELDS.get(builder.toString()) == null){
+        if(inputTextReader.seeNextCharacter() == ':' && CONST_HEADER_FIELDS_AND_VALUES.get(builder.toString()) == null){
             while (inputTextReader.seeNextCharacter() == ':'){
                 builder.append(inputTextReader.getNextCharacter());
                 builderLoop(builder);
@@ -98,8 +138,8 @@ class Lexer {
         return builder.toString();
     }
 
-    private void builderLoop(StringBuilder builder){
-        while(inputTextReader.hasNext() && !isSemicolonColonOrNewLine(inputTextReader.seeNextCharacter())){
+    private void builderLoop(StringBuilder builder) throws UnexpectedCharacterException {
+        while(inputTextReader.hasNext() && isValidStringCharacter(inputTextReader.seeNextCharacter())){
             char c = inputTextReader.getNextCharacter();
             if(c == '"'){
                 builder.append(c);
@@ -110,12 +150,14 @@ class Lexer {
         }
     }
 
-    private void buildInsideQuotationMarks(StringBuilder builder){
+    private void buildInsideQuotationMarks(StringBuilder builder) throws UnexpectedCharacterException{
         while (inputTextReader.hasNext() && inputTextReader.seeNextCharacter() != '"'){
             builder.append(inputTextReader.getNextCharacter());
         }
         if(inputTextReader.hasNext()){
             builder.append(inputTextReader.getNextCharacter());
+        } else {
+            throw new UnexpectedCharacterException("EOF", "\"", currentTokenPosition);
         }
     }
 
@@ -125,25 +167,9 @@ class Lexer {
                 inputTextReader.getPosition().getPositionInLine() + 1);
     }
 
-    private String extractValueFromBoundary(String boundary){
-        String result = boundary.substring(boundary.indexOf('=')+1);
-        if(result.charAt(0) == '"' && result.charAt(result.length() - 1) == '"'){
-            return result.substring(1, result.length() - 1);
-        }
-        return result;
-    }
-
     private void removeWhiteSpace(){
         while(inputTextReader.hasNext() && isWhiteChar(inputTextReader.seeNextCharacter())){
             inputTextReader.getNextCharacter();
         }
-    }
-
-    private boolean isWhiteChar(char character){
-        return character == ' ' || character == '\t';
-    }
-
-    private boolean isSemicolonColonOrNewLine(char character){
-        return character == ';' || character == '\n' || character == ':';
     }
 }
