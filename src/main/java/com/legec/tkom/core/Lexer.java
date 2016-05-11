@@ -4,13 +4,14 @@ import com.legec.tkom.core.exception.UnexpectedCharacterException;
 import com.legec.tkom.core.model.Token;
 import com.legec.tkom.core.model.TokenPosition;
 import com.legec.tkom.core.model.TokenType;
+import javafx.util.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.legec.tkom.core.Utils.*;
 import static com.legec.tkom.core.model.TokenType.*;
+import static java.util.regex.Pattern.compile;
 
 class Lexer {
 
@@ -37,15 +38,19 @@ class Lexer {
         }
     };
 
-    private static final Pattern BOUNDARY_PATTERN = Pattern.compile(BOUNDARY.getPattern());
-    private static final Pattern SEPARATOR_PATTERN = Pattern.compile(SEPARATOR.getPattern());
-    private static final Pattern NUMBER_PATTERN = Pattern.compile(NUMBER.getPattern());
-    private static final Pattern CHARSET_PATTERN = Pattern.compile(CHARSET.getPattern());
-    private static final Pattern CONTENT_MULTIPART_PATTERN = Pattern.compile(CONTENT_MULTIPART.getPattern());
-    private static final Pattern CONTENT_TEXT_PATTERN = Pattern.compile(CONTENT_TEXT.getPattern());
-    private static final Pattern CONTENT_IMAGE_PATTERN = Pattern.compile(CONTENT_IMAGE.getPattern());
-    private static final Pattern CONTENT_APPLICATION_PATTERN = Pattern.compile(CONTENT_APPLICATION.getPattern());
-    private static final Pattern FILE_NAME_PATTERN = Pattern.compile(FILE_NAME.getPattern());
+    private static final List<Pair<Pattern, TokenType>> PATTERN_FIELDS_AND_VALUES = new ArrayList<Pair<Pattern, TokenType>>(){
+        {
+            add(new Pair<>(compile(BOUNDARY.getPattern()), BOUNDARY));
+            add(new Pair<>(compile(SEPARATOR.getPattern()), SEPARATOR));
+            add(new Pair<>(compile(NUMBER.getPattern()), NUMBER));
+            add(new Pair<>(compile(CHARSET.getPattern()), CHARSET));
+            add(new Pair<>(compile(CONTENT_MULTIPART.getPattern()), CONTENT_MULTIPART));
+            add(new Pair<>(compile(CONTENT_TEXT.getPattern()), CONTENT_TEXT));
+            add(new Pair<>(compile(CONTENT_IMAGE.getPattern()), CONTENT_IMAGE));
+            add(new Pair<>(compile(CONTENT_APPLICATION.getPattern()), CONTENT_APPLICATION));
+            add(new Pair<>(compile(FILE_NAME.getPattern()), FILE_NAME));
+        }
+    };
 
     private InputTextReader inputTextReader;
     private TokenPosition currentTokenPosition;
@@ -97,24 +102,30 @@ class Lexer {
             return new Token(type, position);
         } else {
             Token tokenToReturn = null;
-            if(matchPattern(element, BOUNDARY_PATTERN)){
-                tokenToReturn = new Token(BOUNDARY, getStringBetweenQuotationMarks(element), position);
-            } else if(matchPattern(element, SEPARATOR_PATTERN)) {
-                tokenToReturn = new Token(SEPARATOR, element.substring(2, element.length() - 2), position);
-            } else if(matchPattern(element, NUMBER_PATTERN)) {
-                tokenToReturn = new Token(NUMBER, element, position);
-            } else if(matchPattern(element, CHARSET_PATTERN)) {
-                tokenToReturn = new Token(CHARSET, getStringBetweenQuotationMarks(element), position);
-            } else if(matchPattern(element, CONTENT_IMAGE_PATTERN)) {
-                tokenToReturn = new Token(CONTENT_IMAGE, position);
-            } else if(matchPattern(element, CONTENT_MULTIPART_PATTERN)) {
-                tokenToReturn = new Token(CONTENT_MULTIPART, position);
-            } else if(matchPattern(element, CONTENT_TEXT_PATTERN)) {
-                tokenToReturn = new Token(CONTENT_TEXT, position);
-            } else if(matchPattern(element, CONTENT_APPLICATION_PATTERN)) {
-
-            } else if(matchPattern(element, FILE_NAME_PATTERN)) {
-                tokenToReturn = new Token(FILE_NAME, position);
+            Optional<TokenType> optType = PATTERN_FIELDS_AND_VALUES.stream()
+                    .filter(it -> matchPattern(element, it.getKey()))
+                    .map(Pair::getValue)
+                    .findAny();
+            if(optType.isPresent()){
+                switch (optType.get()){
+                    case CONTENT_IMAGE:
+                    case CONTENT_MULTIPART:
+                    case CONTENT_TEXT:
+                    case CONTENT_APPLICATION:
+                        tokenToReturn = new Token(optType.get(), position);
+                        break;
+                    case BOUNDARY:
+                    case CHARSET:
+                    case FILE_NAME:
+                        tokenToReturn = new Token(optType.get(), getStringBetweenQuotationMarks(element), position);
+                        break;
+                    case NUMBER:
+                        tokenToReturn = new Token(optType.get(), element, position);
+                        break;
+                    case SEPARATOR:
+                        tokenToReturn = new Token(SEPARATOR, element.substring(2, element.length() - 2), position);
+                        break;
+                }
             } else {
                 tokenToReturn = new Token(STRING, element, position);
             }
