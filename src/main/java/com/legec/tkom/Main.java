@@ -24,7 +24,7 @@ public class Main extends Application {
 
     }
 
-    public void checkMesssageOnClick(){
+    public void checkMessageOnClick(){
     }
 
     public void onAddDangerousExt(){

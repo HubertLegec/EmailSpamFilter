@@ -47,11 +47,11 @@ public class LexerTest {
             add(new Token(TokenType.INDENTATION, new TokenPosition(3, 1)));
             add(new Token(TokenType.STRING, "Sun,", new TokenPosition(3, 9)));
             add(new Token(TokenType.SPACE, new TokenPosition(3, 13)));
-            add(new Token(TokenType.NUMBER, "10", new TokenPosition(3, 14)));
+            add(new Token(TokenType.STRING, "10", new TokenPosition(3, 14)));
             add(new Token(TokenType.SPACE, new TokenPosition(3, 16)));
             add(new Token(TokenType.STRING, "Apr", new TokenPosition(3, 17)));
             add(new Token(TokenType.SPACE, new TokenPosition(3, 20)));
-            add(new Token(TokenType.NUMBER, "2016", new TokenPosition(3, 21)));
+            add(new Token(TokenType.STRING, "2016", new TokenPosition(3, 21)));
             add(new Token(TokenType.SPACE, new TokenPosition(3, 25)));
             add(new Token(TokenType.STRING, "23:46:50", new TokenPosition(3, 26)));
             add(new Token(TokenType.SPACE, new TokenPosition(3, 34)));
@@ -67,7 +67,7 @@ public class LexerTest {
             add(new Token(TokenType.CONTENT_TYPE, new TokenPosition(5, 1)));
             add(new Token(TokenType.COLON, new TokenPosition(5, 13)));
             add(new Token(TokenType.SPACE, new TokenPosition(5, 14)));
-            add(new Token(TokenType.CONTENT_TEXT, "text/plain", new TokenPosition(5, 15)));
+            add(new Token(TokenType.CONTENT_TYPE_VAL, "text/plain", new TokenPosition(5, 15)));
             add(new Token(TokenType.SEMICOLON, new TokenPosition(5, 25)));
             add(new Token(TokenType.SPACE, new TokenPosition(5, 26)));
             add(new Token(TokenType.CHARSET, "charset=\"UTF-8\"", new TokenPosition(5, 27)));
@@ -147,7 +147,7 @@ public class LexerTest {
 
         Token token = lexer.getNextToken();
         while(token != null){
-            System.out.println(token.getTokenType().name());
+            System.out.println(token.toString());
             token = lexer.getNextToken();
         }
     }

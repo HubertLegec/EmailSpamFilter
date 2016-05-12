@@ -10,6 +10,7 @@ public enum TokenType {
     SUBJECT("Subject"),
     DELIVERED_TO("Delivered-To"),
     RECEIVED("Received"),
+    X_RECEIVED("X-Received"),
     RETURN_PATH("Return-Path"),
     MIME_VERSION("MIME-Version"),
     CONTENT_TYPE("Content-Type"),
@@ -19,15 +20,13 @@ public enum TokenType {
     REPLY_TO("Reply-To"),
     SENDER("Sender"),
     //------ headers values ------
-    ENCODING_BASE64("base64"),
-    ENCODING_QUOTED_PRINTABLE("quoted-printable"),
-    CONTENT_MULTIPART("multipart/[a-z]+"),
-    CONTENT_TEXT("text/[a-z]+"),
-    CONTENT_IMAGE("image/[a-z.]+"),
-    CONTENT_APPLICATION("application/[a-z+-]"),
+    ENCODING_VAL("(base64)|(quoted-printable)|(7bit)"),
+    CONTENT_TYPE_VAL("((multipart)|(application)|(text)|(image)|(audio))/[a-zA-Z]\\S+[a-zA-Z]"),
+    DISPOSITION_VAL("(attachment)|(inline)"),
     BOUNDARY("boundary=\"\\S+\""),
     CHARSET("charset=\"[0-9a-zA-Z-]+\""),
     FILE_NAME("filename=\"\\S+\""),
+    NAME("name=\"\\S+\""),
     //------ others ------
     INDENTATION("\\t|' '{2,}(\\t|' ')*"),
     SPACE(" "),
@@ -35,7 +34,6 @@ public enum TokenType {
     COLON(":"),
     SEMICOLON(";"),
     SEPARATOR("--\\S+"),
-    NUMBER("\\d+|(\\d+.\\d*)"),
     STRING("[^;:\\n\\t\\s]|([^;:\\n\\t\\s]\\S*[^;:\\n\\t\\s])|(\"(.|\\n)*\")");
 
 

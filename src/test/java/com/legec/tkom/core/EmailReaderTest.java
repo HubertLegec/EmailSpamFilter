@@ -31,5 +31,6 @@ public class EmailReaderTest {
             assertTrue("Chars at position equals", testChar == readerChar);
         }
         assertFalse("Reader is empty", emailReader.hasNext());
+        Files.delete(filePath);
     }
 }

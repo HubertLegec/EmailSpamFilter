@@ -4,9 +4,6 @@ public class Position {
     private int line = 0;
     private int positionInLine = 0;
 
-    public Position() {
-    }
-
     public int getLine() {
         return line;
     }

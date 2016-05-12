@@ -51,7 +51,7 @@
                                     <Insets bottom="10.0" />
                                  </VBox.margin>
                               </Separator>
-                              <Button mnemonicParsing="false" onAction="#checkMesssageOnClick" text="Check message">
+                              <Button mnemonicParsing="false" onAction="#checkMessageOnClick" text="Check message">
                                  <font>
                                     <Font size="20.0" />
                                  </font>

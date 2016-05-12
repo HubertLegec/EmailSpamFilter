@@ -30,6 +30,6 @@ public class GlobalConfig {
     }
 
     public static boolean isConfigurationLoaded(){
-        return configuration != null ? true : false;
+        return configuration != null;
     }
 }
