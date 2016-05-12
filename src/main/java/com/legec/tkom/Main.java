@@ -1,34 +1,49 @@
 package com.legec.tkom;
 
 import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class Main extends Application {
+    private Stage primaryStage;
+    private BorderPane rootLayout;
+    @FXML
+    private MainTabController mainTabController;
+    @FXML
+    private SettingsTabController settingsTabController;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("MainWindow.fxml"));
+        this.primaryStage = primaryStage;
         primaryStage.setTitle("Email Spam Filter");
-        primaryStage.setScene(new Scene(root, 400, 600));
-        primaryStage.show();
+        initRootLayout();
+    }
+
+    private void initRootLayout() {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("MainWindow.fxml"));
+            loader.setController(this);
+            rootLayout = loader.load();
+
+            // Show the scene containing the root layout
+            Scene scene = new Scene(rootLayout);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            mainTabController.init(primaryStage);
+            settingsTabController.init(primaryStage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    public void onChooseFileClick() {
-
-    }
-
-    public void checkMessageOnClick(){
-    }
-
-    public void onAddDangerousExt(){
-
     }
 }
 
