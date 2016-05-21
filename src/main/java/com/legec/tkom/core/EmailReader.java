@@ -63,7 +63,7 @@ class EmailReader implements InputTextReader{
         int lineNumber = position.getLine();
         if(positionInLine < lines[lineNumber].length() - 1){
             position.nextPositionInLine();
-        } else if (lineNumber < lines.length - 1){
+        } else if (lineNumber < lines.length - 1 && !lines[lineNumber + 1].isEmpty()){
             position.nextLine();
         } else {
             hasNext = false;

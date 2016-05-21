@@ -1,52 +1,17 @@
 package com.legec.tkom.core;
 
+import com.legec.tkom.core.model.Mappings;
 import com.legec.tkom.core.model.Token;
 import com.legec.tkom.core.model.TokenPosition;
 import com.legec.tkom.core.model.TokenType;
 import javafx.util.Pair;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 import static com.legec.tkom.core.Utils.*;
 import static com.legec.tkom.core.model.TokenType.*;
-import static java.util.regex.Pattern.compile;
 
 class Lexer {
-    private static final Map<String, TokenType> CONST_HEADER_FIELDS_AND_VALUES = new HashMap<String, TokenType>(){
-        {
-            put(DELIVERED_TO.getPattern(), DELIVERED_TO);
-            put(FROM.getPattern(), FROM);
-            put(TO.getPattern(), TO);
-            put(BCC.getPattern(), BCC);
-            put(DATE.getPattern(),DATE);
-            put(CC.getPattern(), CC);
-            put(SUBJECT.getPattern(), SUBJECT);
-            put(RECEIVED.getPattern(), RECEIVED);
-            put(X_RECEIVED.getPattern(), X_RECEIVED);
-            put(REPLY_TO.getPattern(), REPLY_TO);
-            put(RETURN_PATH.getPattern(), RETURN_PATH);
-            put(MIME_VERSION.getPattern(), MIME_VERSION);
-            put(CONTENT_TRANSFER_ENCODING.getPattern(), CONTENT_TRANSFER_ENCODING);
-            put(CONTENT_TYPE.getPattern(), CONTENT_TYPE);
-            put(CONTENT_DISPOSITION.getPattern(), CONTENT_DISPOSITION);
-            put(MESSAGE_ID.getPattern(), MESSAGE_ID);
-            put(SENDER.getPattern(), SENDER);
-        }
-    };
-    private static final List<Pair<Pattern, TokenType>> PATTERN_FIELDS_AND_VALUES = new ArrayList<Pair<Pattern, TokenType>>(){
-        {
-            add(new Pair<>(compile(BOUNDARY.getPattern()), BOUNDARY));
-            add(new Pair<>(compile(SEPARATOR.getPattern()), SEPARATOR));
-            add(new Pair<>(compile(CHARSET.getPattern()), CHARSET));
-            add(new Pair<>(compile(CONTENT_TYPE_VAL.getPattern()), CONTENT_TYPE_VAL));
-            add(new Pair<>(compile(FILE_NAME.getPattern()), FILE_NAME));
-            add(new Pair<>(compile(NAME.getPattern()), NAME));
-            add(new Pair<>(compile(ENCODING_VAL.getPattern()), ENCODING_VAL));
-            add(new Pair<>(compile(DISPOSITION_VAL.getPattern()), DISPOSITION_VAL));
-        }
-    };
-
     private InputTextReader inputTextReader;
     private TokenPosition currentTokenPosition;
 
@@ -59,24 +24,20 @@ class Lexer {
             return null;
         } else {
             char processedChar = inputTextReader.seeNextCharacter();
+            currentTokenPosition = getTokenPosition();
             if (inputTextReader.getPosition().isLineBegin() && isWhiteChar(processedChar)){
-                currentTokenPosition = getTokenPosition();
                 removeWhiteSpace();
                 return new Token(INDENTATION, currentTokenPosition);
             } else if(processedChar == '\n') {
-                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
                 return new Token(NEW_LINE, currentTokenPosition);
             } else if(processedChar == ';') {
-                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
                 return new Token(SEMICOLON, currentTokenPosition);
             } else if(processedChar == ':') {
-                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
                 return new Token(COLON, currentTokenPosition);
             } else if(processedChar == ' ') {
-                currentTokenPosition = getTokenPosition();
                 inputTextReader.getNextCharacter();
                 return new Token(SPACE, currentTokenPosition);
             } else {
@@ -86,18 +47,17 @@ class Lexer {
     }
 
     private Token processContent() {
-        currentTokenPosition = getTokenPosition();
         String element = buildElement();
         return convertElementToToken(element, currentTokenPosition);
     }
 
     private Token convertElementToToken(String element, TokenPosition position){
-        TokenType type = CONST_HEADER_FIELDS_AND_VALUES.get(element);
+        TokenType type = Mappings.CONST_HEADER_FIELDS_AND_VALUES.get(element);
         if(type != null){
             return new Token(type, position);
         } else {
             Token tokenToReturn = null;
-            Optional<TokenType> optType = PATTERN_FIELDS_AND_VALUES.stream()
+            Optional<TokenType> optType = Mappings.PATTERN_FIELDS_AND_VALUES.stream()
                     .filter(it -> matchPattern(element, it.getKey()))
                     .map(Pair::getValue)
                     .findAny();
@@ -132,7 +92,7 @@ class Lexer {
         Colon should break building of element only in case it is header field element
         If it is string value colon should be included
          */
-        if(inputTextReader.seeNextCharacter() == ':' && CONST_HEADER_FIELDS_AND_VALUES.get(builder.toString()) == null){
+        if(inputTextReader.seeNextCharacter() == ':' && Mappings.CONST_HEADER_FIELDS_AND_VALUES.get(builder.toString()) == null){
             while (inputTextReader.seeNextCharacter() == ':'){
                 builder.append(inputTextReader.getNextCharacter());
                 builderLoop(builder);
@@ -162,7 +122,7 @@ class Lexer {
         }
     }
 
-    private TokenPosition getTokenPosition() {
+    TokenPosition getTokenPosition() {
         return new TokenPosition(
                 inputTextReader.getPosition().getLine() + 1,
                 inputTextReader.getPosition().getPositionInLine() + 1);

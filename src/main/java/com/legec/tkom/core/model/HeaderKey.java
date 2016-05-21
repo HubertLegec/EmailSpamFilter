@@ -28,4 +28,19 @@ public enum HeaderKey {
     public String getName() {
         return name;
     }
+
+    public static HeaderKey getFromTokenType(TokenType type){
+        return fromString(type.getPattern());
+    }
+
+    public static HeaderKey fromString(String text) {
+        if (text != null) {
+            for (HeaderKey k : HeaderKey.values()) {
+                if (text.equalsIgnoreCase(k.name)) {
+                    return k;
+                }
+            }
+        }
+        return null;
+    }
 }

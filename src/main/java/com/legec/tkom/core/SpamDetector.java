@@ -23,6 +23,7 @@ public class SpamDetector {
 
     public void init(Path inputFilePath) throws IOException {
         inputTextReader.setInputFile(inputFilePath);
+
     }
 
     public boolean process() {
