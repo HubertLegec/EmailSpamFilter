@@ -1,18 +1,16 @@
 package com.legec.tkom.core;
 
 import com.legec.tkom.core.model.*;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static com.legec.tkom.core.model.ExceptionMessage.*;
 import static com.legec.tkom.core.model.TokenType.*;
 
 class Parser {
-
     private Lexer lexer;
     private EmailModel model = new EmailModel();
     private Token token = null;
+    private BodyPart currentBodyPart = null;
 
 
     Parser(Lexer lexer) {
@@ -38,10 +36,33 @@ class Parser {
 
     private void parseBody() {
         checkIfPartExist(BODY_DOES_NOT_EXIST);
-        while (token != null) {
-            //TODO
-            token = lexer.getNextToken();
+        if(!model.isMultipart()){
+            currentBodyPart = new BodyPart();
+            StringBuilder bodyBuilder = new StringBuilder();
+            while(token != null){
+                bodyBuilder.append(token.getWrappedValue());
+                nextToken();
+            }
+            currentBodyPart.setBody(bodyBuilder.toString());
+            addBodyPartToModel();
+        } else {
+            while (token != null) {
+                while (token.getTokenType() == TokenType.NEW_LINE) {
+                    nextToken();
+                }
+                checkIfPartExist(BODY_PART_DOES_NOT_EXIST);
+                currentBodyPart = new BodyPart();
+                if (!parseBodyPart()) {
+                    break;
+                }
+                addBodyPartToModel();
+            }
         }
+    }
+
+    private boolean parseBodyPart(){
+        //TODO
+        return false;
     }
 
     private void parseHeaderRow() {
@@ -52,7 +73,7 @@ class Parser {
         goToValue();
         List<String> values = new ArrayList<>();
         boolean wasIndentationOrSpace;
-        do{
+        do {
             readHeaderRowValue(key, values);
             if(token.getTokenType() == NEW_LINE){
                 nextToken();
@@ -69,7 +90,7 @@ class Parser {
                 wasIndentationOrSpace = false;
             }
         } while (wasIndentationOrSpace);
-        model.getEmailHeader().addHeader(key, values);
+        addHeaderPart(key, values);
     }
 
     private void readHeaderRowValue(HeaderKey key, List<String> values){
@@ -117,10 +138,24 @@ class Parser {
         }
     }
 
+    private void addBodyPartToModel(){
+        if(currentBodyPart != null) {
+            model.getBodyParts().add(currentBodyPart);
+            currentBodyPart = null;
+        }
+    }
+
+    private void addHeaderPart(HeaderKey key, List<String> values) {
+        if(currentBodyPart == null){
+            model.addMainHeaderRow(key, values);
+        } else {
+            currentBodyPart.addHeaderRow(key, values);
+        }
+    }
+
     private void nextToken(){
         token = lexer.getNextToken();
     }
-
     EmailModel getModel() {
         return model;
     }

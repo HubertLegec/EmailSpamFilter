@@ -39,7 +39,16 @@ public class Token {
             return "name=\"" + value + "\"";
         } else if (tokenType == FILE_NAME){
             return "filename=\"" + value + "\"";
+        } else if (tokenType == NEW_LINE) {
+            return "\n";
+        } else if (tokenType == SPACE ||
+                tokenType == COLON ||
+                tokenType == SEMICOLON) {
+            return tokenType.getPattern();
         } else {
+            if(value == null){
+                throw new RuntimeException("Value field is empty");
+            }
             return value;
         }
     }

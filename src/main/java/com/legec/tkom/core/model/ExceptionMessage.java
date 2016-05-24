@@ -3,6 +3,7 @@ package com.legec.tkom.core.model;
 public enum ExceptionMessage {
     HEADER_DOES_NOT_EXIST("Header expected"),
     BODY_DOES_NOT_EXIST("Body expected"),
+    BODY_PART_DOES_NOT_EXIST("Body part expected"),
     HEADER_KEY_EXPECTED("Header key expected"),
     UNEXPECTED_HEADER_ROW_VALUE("Unexpected header row value");
 

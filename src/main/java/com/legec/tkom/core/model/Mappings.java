@@ -14,7 +14,6 @@ import static java.util.regex.Pattern.compile;
 
 public class Mappings {
     //--------------------------------------- Lexer ---------------------------------------------------------
-
     public static final Map<String, TokenType> CONST_HEADER_FIELDS_AND_VALUES = new HashMap<String, TokenType>(){
         {
             put(DELIVERED_TO.getPattern(), DELIVERED_TO);
@@ -36,6 +35,7 @@ public class Mappings {
             put(SENDER.getPattern(), SENDER);
         }
     };
+
     public static final List<Pair<Pattern, TokenType>> PATTERN_FIELDS_AND_VALUES = new ArrayList<Pair<Pattern, TokenType>>(){
         {
             add(new Pair<>(compile(BOUNDARY.getPattern()), BOUNDARY));
@@ -50,7 +50,6 @@ public class Mappings {
     };
 
     //----------------------------------------- Parser -----------------------------------------------------------------
-
     private static final List<TokenType> CONTENT_TYPE_VALUES = new ArrayList<TokenType>(){
         {
             add(BOUNDARY);

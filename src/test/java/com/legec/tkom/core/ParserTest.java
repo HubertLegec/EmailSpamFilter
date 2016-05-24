@@ -2,6 +2,9 @@ package com.legec.tkom.core;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 public class ParserTest {
 
     private static final String[] FIRST_TEST_INPUT = {
@@ -11,6 +14,22 @@ public class ParserTest {
             "To: hubert.legec@gmail.com",
             "Content-Type: text/plain; charset=\"UTF-8\"",
             ""
+    };
+
+    private static final String[] PLAIN_TEXT_MESSAGE_INPUT = {
+            "From: zuraw@domena.pl",
+            "To: czapla@domena.pl",
+            "Subject: =?iso-8859-2?Q?Czaplo=2C_czy_um=F3wisz_si=EA_ze_mn=B1=3F?=",
+            "MIME-Version: 1.0",
+            "Content-Type: text/plain",
+            "",
+            "Hi Tom,",
+            "",
+            "How are you?",
+            "Call me ASAP!",
+            "",
+            "Waiting to hear you,",
+            "Anna"
     };
 
     private static final String[] SECOND_TEST_INPUT = {
@@ -58,5 +77,19 @@ public class ParserTest {
         Lexer lexer = new Lexer(emailReader);
         Parser parser = new Parser(lexer);
         parser.parse();
+    }
+
+    @Test
+    public void plainTextMessageTest(){
+        EmailReader emailReader = new EmailReader();
+        emailReader.setLines(PLAIN_TEXT_MESSAGE_INPUT);
+        Lexer lexer = new Lexer(emailReader);
+        Parser parser = new Parser(lexer);
+        parser.parse();
+
+        assertFalse(parser.getModel().isMultipart());
+        assertEquals(parser.getModel().getEmailHeader().getHeaderParts().size(), 5);
+        assertEquals(parser.getModel().getBodyParts().size(), 1);
+        assertFalse(parser.getModel().getBodyParts().get(0).getBody().isEmpty());
     }
 }

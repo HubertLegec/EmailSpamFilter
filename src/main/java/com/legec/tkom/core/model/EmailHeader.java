@@ -1,6 +1,5 @@
 package com.legec.tkom.core.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,18 +7,7 @@ import java.util.Map;
 public class EmailHeader {
     private Map<HeaderKey, List<String>> headerParts = new HashMap<>();
 
-    public void addHeader(HeaderKey key, String value) {
-        List<String> elements = headerParts.get(key);
-        if (elements != null) {
-            elements.add(value);
-        } else {
-            elements = new ArrayList<>();
-            elements.add(value);
-            headerParts.put(key, elements);
-        }
-    }
-
-    public void addHeader(HeaderKey key, List<String> values) {
+    public void addHeaderPart(HeaderKey key, List<String> values) {
         List<String> elements = headerParts.get(key);
         if (elements != null) {
             for(String value : values) {
@@ -33,6 +21,10 @@ public class EmailHeader {
 
     public List<String> getFieldValues(HeaderKey key) {
         return headerParts.get(key);
+    }
+
+    public Map<HeaderKey, List<String>> getHeaderParts() {
+        return headerParts;
     }
 
     public boolean isEmpty() {
