@@ -4,7 +4,10 @@ public enum ExceptionMessage {
     HEADER_DOES_NOT_EXIST("Header expected"),
     BODY_DOES_NOT_EXIST("Body expected"),
     BODY_PART_DOES_NOT_EXIST("Body part expected"),
+    BODY_PART_SEPARATOR_DOES_NOT_EXIST("Body part separator expected"),
+    END_SEPARATOR_DOES_NOT_EXIST("End separator expected"),
     HEADER_KEY_EXPECTED("Header key expected"),
+    END_OF_EMAIL_EXPECTED("End of email expected"),
     UNEXPECTED_HEADER_ROW_VALUE("Unexpected header row value");
 
 
