@@ -1,5 +1,6 @@
 package com.legec.tkom;
 
+import com.legec.tkom.core.SpamDetector;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +17,8 @@ public class Main extends Application {
     private MainTabController mainTabController;
     @FXML
     private SettingsTabController settingsTabController;
+
+    private SpamDetector spamDetector = new SpamDetector();
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -35,7 +38,7 @@ public class Main extends Application {
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
-            mainTabController.init(primaryStage);
+            mainTabController.init(primaryStage, spamDetector);
             settingsTabController.init(primaryStage);
         } catch (IOException e) {
             e.printStackTrace();

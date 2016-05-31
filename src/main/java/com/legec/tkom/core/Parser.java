@@ -13,7 +13,7 @@ import static java.util.Arrays.asList;
 
 class Parser {
     private final Lexer lexer;
-    private final EmailModel model = new EmailModel();
+    private EmailModel model = new EmailModel();
     private Token token = null;
     private BodyPart currentBodyPart = null;
 
@@ -22,6 +22,7 @@ class Parser {
     }
 
     void parse() throws ParserException {
+        reset();
         nextToken();
         parseHeader();
         parseBody();
@@ -189,5 +190,11 @@ class Parser {
 
     EmailModel getModel() {
         return model;
+    }
+
+    private void reset() {
+        model = new EmailModel();
+        token = null;
+        currentBodyPart = null;
     }
 }

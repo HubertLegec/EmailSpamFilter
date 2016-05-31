@@ -6,6 +6,7 @@ import javafx.util.Pair;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class SpamDetector {
@@ -21,9 +22,9 @@ public class SpamDetector {
         parser = new Parser(lexer);
     }
 
-    public void init(Path inputFilePath) throws IOException {
-        inputTextReader.setInputFile(inputFilePath);
-
+    public void init(String inputFilePath) throws IOException {
+        Path path = Paths.get(inputFilePath);
+        inputTextReader.setInputFile(path);
     }
 
     public boolean process() {
