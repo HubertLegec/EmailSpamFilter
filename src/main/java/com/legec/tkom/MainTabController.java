@@ -1,6 +1,9 @@
 package com.legec.tkom;
 
 import com.legec.tkom.core.SpamDetector;
+import com.legec.tkom.core.model.EmailType;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -8,9 +11,11 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class MainTabController {
     private Stage primaryStage;
@@ -19,13 +24,16 @@ public class MainTabController {
     @FXML
     private Label resultLabel;
     @FXML
-    private ListView messagesLV;
+    private ListView<String> messagesLV;
+
+    private ObservableList<String> messagesModel = FXCollections.observableArrayList();
 
     private SpamDetector spamDetector;
 
     void init(Stage stage, SpamDetector spamDetector) {
         this.primaryStage = stage;
         this.spamDetector = spamDetector;
+        messagesLV.setItems(messagesModel);
     }
 
     @FXML
@@ -41,7 +49,11 @@ public class MainTabController {
     private void checkMessageOnClick(ActionEvent actionEvent) {
         try {
             spamDetector.init(filePathTF.getText());
-            spamDetector.process();
+            if(spamDetector.process()){
+                Pair<EmailType, List<String>> result = spamDetector.getResult();
+                messagesModel.addAll(result.getValue());
+                resultLabel.setText(result.getKey().name());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

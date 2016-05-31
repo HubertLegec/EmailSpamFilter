@@ -33,6 +33,7 @@ public class Mappings {
             put(CONTENT_DISPOSITION.getPattern(), CONTENT_DISPOSITION);
             put(MESSAGE_ID.getPattern(), MESSAGE_ID);
             put(SENDER.getPattern(), SENDER);
+            put(LIST_UNSUBSCRIBE.getPattern(), LIST_UNSUBSCRIBE);
         }
     };
 

@@ -17,7 +17,8 @@ public enum HeaderKey {
     CONTENT_DISPOSITION("Content-Disposition"),
     MESSAGE_ID("Message-ID"),
     REPLY_TO("Reply-To"),
-    SENDER("Sender");
+    SENDER("Sender"),
+    LIST_UNSUBSCRIBE("List-Unsubscribe");
 
     private String name;
 

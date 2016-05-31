@@ -19,6 +19,7 @@ public enum TokenType {
     MESSAGE_ID("Message-ID"),
     REPLY_TO("Reply-To"),
     SENDER("Sender"),
+    LIST_UNSUBSCRIBE("List-Unsubscribe"),
     //------ headers values ------
     ENCODING_VAL("(base64)|(quoted-printable)|(7bit)"),
     CONTENT_TYPE_VAL("((multipart)|(application)|(text)|(image)|(audio))/[a-zA-Z]\\S+[a-zA-Z]"),

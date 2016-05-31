@@ -24,6 +24,7 @@ public class ParserTest {
             "Subject: =?iso-8859-2?Q?Czaplo=2C_czy_um=F3wisz_si=EA_ze_mn=B1=3F?=",
             "MIME-Version: 1.0",
             "Content-Type: text/plain",
+            "List-Unsubscribe: <mailto:unsubscribe-espc-tech-12345N@domain.com>, <http://domain.com/member/unsubscribe/?listname=espc-tech@domain.com?id=12345N>",
             "",
             "Hi Tom,",
             "",
@@ -79,7 +80,7 @@ public class ParserTest {
         parser.parse();
 
         assertFalse(parser.getModel().isMultipart());
-        assertEquals(parser.getModel().getEmailHeader().getHeaderParts().size(), 5);
+        assertEquals(parser.getModel().getEmailHeader().getHeaderParts().size(), 6);
         assertEquals(parser.getModel().getBodyParts().size(), 1);
         assertFalse(parser.getModel().getBodyParts().get(0).getBody().isEmpty());
     }

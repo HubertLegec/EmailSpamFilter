@@ -1,6 +1,7 @@
 package com.legec.tkom;
 
 import com.legec.tkom.core.configuration.Configuration;
+import com.legec.tkom.core.configuration.GlobalConfig;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -54,6 +55,7 @@ public class SettingsTabController {
         String val = getInputTextFromDialog("Suspicious content", "Type content may be suspicious", "Value");
         if(val != null){
             contentModel.add(val);
+            updateGlobalConfig();
         }
     }
 
@@ -61,6 +63,7 @@ public class SettingsTabController {
     private void onRemoveSuspContent(ActionEvent actionEvent) {
         if(suspiciousContLV.getSelectionModel().getSelectedItems().size() == 1){
             contentModel.remove(suspiciousContLV.getSelectionModel().getSelectedIndex());
+            updateGlobalConfig();
         }
     }
 
@@ -69,6 +72,7 @@ public class SettingsTabController {
         String val = getInputTextFromDialog("Dangerous extension", "Type attachment extension may be dangerous", "Extension");
         if(val != null){
             extensionsModel.add(val);
+            updateGlobalConfig();
         }
     }
 
@@ -76,6 +80,7 @@ public class SettingsTabController {
     private void onRemoveDangerousExt(ActionEvent actionEvent) {
         if(dangerousExtLV.getSelectionModel().getSelectedItems().size() == 1){
             extensionsModel.remove(dangerousExtLV.getSelectionModel().getSelectedIndex());
+            updateGlobalConfig();
         }
     }
 
@@ -84,6 +89,7 @@ public class SettingsTabController {
         String val = getInputTextFromDialog("Suspicious server", "Type server IP may be dangerous", "IP address");
         if(val != null){
             serversModel.add(val);
+            updateGlobalConfig();
         }
     }
 
@@ -91,6 +97,7 @@ public class SettingsTabController {
     private void onRemoveServer(ActionEvent actionEvent) {
         if(serversLV.getSelectionModel().getSelectedItems().size() == 1){
             serversModel.remove(serversLV.getSelectionModel().getSelectedIndex());
+            updateGlobalConfig();
         }
     }
 
@@ -99,6 +106,7 @@ public class SettingsTabController {
         String val = getInputTextFromDialog("Suspicious title", "Type word or phase which if present in title may be dangerous", "Value");
         if(val != null){
             titleModel.add(val);
+            updateGlobalConfig();
         }
     }
 
@@ -106,6 +114,7 @@ public class SettingsTabController {
     private void onRemoveSuspTitle(ActionEvent actionEvent) {
         if(suspiciousTitleLV.getSelectionModel().getSelectedItems().size() == 1){
             titleModel.remove(suspiciousTitleLV.getSelectionModel().getSelectedIndex());
+            updateGlobalConfig();
         }
     }
 
@@ -118,19 +127,23 @@ public class SettingsTabController {
         return result.orElse(null);
     }
 
-    public void loadConfiguration(Configuration configuration){
+    void loadConfiguration(Configuration configuration){
         contentModel.setAll(configuration.getSuspiciousWords());
         titleModel.setAll(configuration.getSuspiciousTitleWords());
         extensionsModel.setAll(configuration.getDangerousExtensions());
         serversModel.setAll(configuration.getDangerousServers());
     }
 
-    public Configuration getConfig(){
+    Configuration getConfig(){
         Configuration configuration = new Configuration();
         configuration.setDangerousExtensions(extensionsModel);
         configuration.setDangerousServers(serversModel);
         configuration.setSuspiciousTitleWords(titleModel);
         configuration.setSuspiciousWords(contentModel);
         return configuration;
+    }
+
+    private void updateGlobalConfig(){
+        GlobalConfig.setConfiguration(getConfig());
     }
 }

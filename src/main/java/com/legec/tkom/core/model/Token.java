@@ -54,7 +54,7 @@ public class Token {
     }
 
     public boolean isHeaderRowKey(){
-        return tokenType.ordinal() >= 0 && tokenType.ordinal() < 17;
+        return tokenType.ordinal() >= 0 && tokenType.ordinal() < 18;
     }
 
     @Override
