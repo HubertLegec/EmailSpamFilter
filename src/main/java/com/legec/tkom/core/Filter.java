@@ -20,7 +20,8 @@ class Filter {
 
     EmailType processEmail() {
         checkTitle();
-        checkSuspiciousExtensions();
+        checkAttachmentsExtensions();
+        checkServers();
         return type;
     }
 
@@ -28,7 +29,7 @@ class Filter {
         return suspiciousElements;
     }
 
-    private void checkSuspiciousExtensions() {
+    private void checkAttachmentsExtensions() {
         List<String> suspiciousExtensions = GlobalConfig.getConfiguration().getDangerousExtensions();
         if (suspiciousExtensions.isEmpty() || !model.isMultipart()) {
             return;
@@ -62,6 +63,24 @@ class Filter {
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void checkServers() {
+        List<String> suspiciousServers = GlobalConfig.getConfiguration().getDangerousServers();
+        List<String> cumulativeRoute = new ArrayList<>();
+        model.getEmailHeader().getHeaderParts().entrySet().stream()
+                .filter( entry -> entry.getKey() == HeaderKey.RECEIVED || entry.getKey() == HeaderKey.X_RECEIVED)
+                .forEach( entry -> cumulativeRoute.addAll(entry.getValue()));
+        List<String> foundServers = suspiciousServers.stream()
+                .filter( server ->
+                        cumulativeRoute.stream().anyMatch( value -> value.contains(server))
+                )
+                .map( server -> "Server on email route: " + server)
+                .collect(Collectors.toList());
+        if(!foundServers.isEmpty()){
+            suspiciousElements.addAll(foundServers);
+            type = EmailType.SPAM;
         }
     }
 
