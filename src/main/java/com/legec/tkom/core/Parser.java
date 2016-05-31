@@ -3,20 +3,19 @@ package com.legec.tkom.core;
 import com.legec.tkom.core.model.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.legec.tkom.core.Utils.isHeaderKeyIn;
 import static com.legec.tkom.core.Utils.isTokenTypeIn;
 import static com.legec.tkom.core.model.ExceptionMessage.*;
 import static com.legec.tkom.core.model.TokenType.*;
+import static java.util.Arrays.asList;
 
 class Parser {
     private final Lexer lexer;
     private final EmailModel model = new EmailModel();
     private Token token = null;
     private BodyPart currentBodyPart = null;
-
 
     Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -30,11 +29,9 @@ class Parser {
 
     private void parseHeader() throws ParserException {
         checkIfPartExist(HEADER_DOES_NOT_EXIST);
-        boolean validRow = true;
-        while (validRow) {
+        do {
             parseHeaderRow();
-            validRow = token != null && token.isHeaderRowKey();
-        }
+        } while (token != null && token.isHeaderRowKey());
     }
 
     private void parseBody() throws ParserException {
@@ -58,13 +55,16 @@ class Parser {
                 shouldContinue = parseBodyPart();
                 addBodyPartToModel();
             }
+            checkIfBodyEnd();
+        }
+    }
+
+    private void checkIfBodyEnd() {
+        do {
             nextToken();
-            while (token != null && (token.getTokenType() == SPACE || token.getTokenType() == NEW_LINE)) {
-                nextToken();
-            }
-            if (token != null) {
-                throw new ParserException(END_OF_EMAIL_EXPECTED, lexer.getTokenPosition());
-            }
+        } while (isTokenTypeIn(token, asList(SPACE, NEW_LINE)));
+        if (token != null) {
+            throw new ParserException(END_OF_EMAIL_EXPECTED, lexer.getTokenPosition());
         }
     }
 
@@ -72,10 +72,9 @@ class Parser {
         if (token.getTokenType() != SEPARATOR) {
             throw new ParserException(BODY_PART_SEPARATOR_DOES_NOT_EXIST, token.getPosition());
         } else {
-            nextToken();
-            while (token.getTokenType() == NEW_LINE) {
+            do {
                 nextToken();
-            }
+            } while (token.getTokenType() == NEW_LINE);
         }
         parseHeader();
         skipNewLines();
@@ -100,48 +99,43 @@ class Parser {
     }
 
     private void parseHeaderRow() {
+        HeaderKey key = readHeaderRowKey();
+        goToValue();
+        List<String> values = new ArrayList<>();
+        while(true) {
+            readHeaderRowValue(key, values);
+            if (isTokenTypeIn(token, asList(SPACE, INDENTATION))) {
+                nextToken();
+            } else {
+                break;
+            }
+        }
+        addHeaderPart(key, values);
+    }
+
+    private HeaderKey readHeaderRowKey() {
         if (!token.isHeaderRowKey()) {
             throw new ParserException(HEADER_KEY_EXPECTED, token.getPosition());
         }
-        HeaderKey key = HeaderKey.getFromTokenType(token.getTokenType());
-        goToValue();
-        List<String> values = new ArrayList<>();
-        boolean wasIndentationOrSpace;
-        do {
-            readHeaderRowValue(key, values);
-            if (token.getTokenType() == NEW_LINE) {
-                nextToken();
-                if (token == null) {
-                    wasIndentationOrSpace = false;
-                    continue;
-                }
-            }
-
-            if (isTokenTypeIn(token, Arrays.asList(SPACE, INDENTATION))) {
-                wasIndentationOrSpace = true;
-                nextToken();
-            } else {
-                wasIndentationOrSpace = false;
-            }
-        } while (wasIndentationOrSpace);
-        addHeaderPart(key, values);
+        return HeaderKey.getFromTokenType(token.getTokenType());
     }
 
     private void readHeaderRowValue(HeaderKey key, List<String> values) {
         StringBuilder builder = new StringBuilder();
-        while (!isTokenTypeIn(token, Arrays.asList(NEW_LINE, SEMICOLON))) {
-            if (token.getTokenType() == SPACE) {
-                builder.append(" ");
-            } else if (isHeaderKeyIn(key, Arrays.asList(HeaderKey.CONTENT_TYPE, HeaderKey.CONTENT_TRANSFER_ENCODING, HeaderKey.CONTENT_DISPOSITION))) {
+        while (!isTokenTypeIn(token, asList(NEW_LINE, SEMICOLON))) {
+            if (isTokenTypeIn(token, asList(SPACE, STRING))) {
+                builder.append(token.getWrappedValue());
+            } else if (isHeaderKeyIn(key, asList(HeaderKey.CONTENT_TYPE, HeaderKey.CONTENT_TRANSFER_ENCODING, HeaderKey.CONTENT_DISPOSITION))) {
                 addKeyValues(builder, key);
-            } else if (token.getTokenType() == STRING) {
-                builder.append(token.getValue());
-            } else {
+            }  else {
                 throw new ParserException(UNEXPECTED_HEADER_ROW_VALUE, token.getPosition());
             }
             nextToken();
         }
         if (token.getTokenType() == SEMICOLON) {
+            nextToken();
+        }
+        if (token.getTokenType() == NEW_LINE) {
             nextToken();
         }
         values.add(builder.toString());
@@ -163,7 +157,7 @@ class Parser {
 
     private void goToValue() {
         nextToken();
-        while (isTokenTypeIn(token, Arrays.asList(COLON, SPACE, INDENTATION))) {
+        while (isTokenTypeIn(token, asList(COLON, SPACE, INDENTATION))) {
             nextToken();
         }
     }

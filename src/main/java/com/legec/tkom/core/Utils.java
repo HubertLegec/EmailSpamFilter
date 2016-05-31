@@ -34,7 +34,7 @@ class Utils {
     }
 
     static boolean isTokenTypeIn(Token token, List<TokenType> types) {
-        return types.contains(token.getTokenType());
+        return token != null && types.contains(token.getTokenType());
     }
 
     static boolean isHeaderKeyIn(HeaderKey key, List<HeaderKey> values) {
