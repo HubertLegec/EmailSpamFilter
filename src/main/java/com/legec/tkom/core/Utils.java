@@ -7,7 +7,7 @@ import com.legec.tkom.core.model.TokenType;
 import java.util.List;
 import java.util.regex.Pattern;
 
-class Utils {
+public class Utils {
 
     static boolean isWhiteChar(char character) {
         return character == ' ' || character == '\t';
