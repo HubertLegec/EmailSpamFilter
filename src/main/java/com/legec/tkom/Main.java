@@ -1,6 +1,7 @@
 package com.legec.tkom;
 
 import com.legec.tkom.core.SpamDetector;
+import com.legec.tkom.core.configuration.GlobalConfig;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -47,6 +48,26 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @FXML
+    private void onLoadConfiguration(){
+        try {
+            GlobalConfig.loadConfiguration();
+            settingsTabController.loadConfiguration(GlobalConfig.getConfiguration());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onSaveConfiguration(){
+        GlobalConfig.setConfiguration(settingsTabController.getConfig());
+        try {
+            GlobalConfig.saveConfiguration();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

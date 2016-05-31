@@ -11,25 +11,26 @@ import java.nio.file.Paths;
 
 public class GlobalConfig {
     private static Configuration configuration = null;
+    private static final String CONFIG_FILE = "config.conf";
 
 
-    public static void loadConfiguration(String configFilePath) throws IOException{
+    public static void loadConfiguration() throws IOException{
         Gson gson = new Gson();
-        BufferedReader br = new BufferedReader(new FileReader(configFilePath));
+        BufferedReader br = new BufferedReader(new FileReader(CONFIG_FILE));
         configuration = gson.fromJson(br, Configuration.class);
     }
 
-    public static void saveConfiguration(String destinationPath) throws IOException{
+    public static void saveConfiguration() throws IOException{
         Gson gson = new Gson();
         String mappedObject = gson.toJson(configuration);
-        Files.write(Paths.get(destinationPath), mappedObject.getBytes());
+        Files.write(Paths.get(CONFIG_FILE), mappedObject.getBytes());
     }
 
     public static Configuration getConfiguration(){
         return configuration;
     }
 
-    public static boolean isConfigurationLoaded(){
-        return configuration != null;
+    public static void setConfiguration(Configuration conf){
+        configuration =  conf;
     }
 }

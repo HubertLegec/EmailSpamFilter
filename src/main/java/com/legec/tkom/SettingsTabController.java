@@ -1,5 +1,6 @@
 package com.legec.tkom;
 
+import com.legec.tkom.core.configuration.Configuration;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -36,14 +37,12 @@ public class SettingsTabController {
     private ObservableList<String> serversModel = FXCollections.observableArrayList();
     private ObservableList<String> titleModel = FXCollections.observableArrayList();
 
-
     void init(Stage stage){
         this.primaryStage = stage;
         suspiciousContLV.setItems(contentModel);
         dangerousExtLV.setItems(extensionsModel);
         serversLV.setItems(serversModel);
         suspiciousTitleLV.setItems(titleModel);
-
         removeContentBT.disableProperty().bind(suspiciousContLV.getSelectionModel().selectedItemProperty().isNull());
         removeExtensionBT.disableProperty().bind(dangerousExtLV.getSelectionModel().selectedItemProperty().isNull());
         removeTitleBT.disableProperty().bind(suspiciousTitleLV.getSelectionModel().selectedItemProperty().isNull());
@@ -117,5 +116,21 @@ public class SettingsTabController {
         dialog.setHeaderText(header);
         Optional<String> result = dialog.showAndWait();
         return result.orElse(null);
+    }
+
+    public void loadConfiguration(Configuration configuration){
+        contentModel.setAll(configuration.getSuspiciousWords());
+        titleModel.setAll(configuration.getSuspiciousTitleWords());
+        extensionsModel.setAll(configuration.getDangerousExtensions());
+        serversModel.setAll(configuration.getDangerousServers());
+    }
+
+    public Configuration getConfig(){
+        Configuration configuration = new Configuration();
+        configuration.setDangerousExtensions(extensionsModel);
+        configuration.setDangerousServers(serversModel);
+        configuration.setSuspiciousTitleWords(titleModel);
+        configuration.setSuspiciousWords(contentModel);
+        return configuration;
     }
 }
