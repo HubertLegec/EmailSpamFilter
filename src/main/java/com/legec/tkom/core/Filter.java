@@ -3,6 +3,8 @@ package com.legec.tkom.core;
 import com.legec.tkom.core.configuration.GlobalConfig;
 import com.legec.tkom.core.model.*;
 
+import javax.mail.internet.MimeUtility;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,20 +35,34 @@ class Filter {
         }
         List<String> attachmentNames = model.getBodyParts().stream()
                 .filter(part -> isSuspiciousAttachment(part, suspiciousExtensions))
-                .map( part -> getAttachmentFileName(part))
+                .map(part -> getAttachmentFileName(part))
                 .collect(Collectors.toList());
-        if(!attachmentNames.isEmpty()){
+        if (!attachmentNames.isEmpty()) {
             suspiciousElements.addAll(attachmentNames);
             type = EmailType.SPAM;
         }
     }
 
-    private void checkTitle(){
+    private void checkTitle() {
         List<String> suspiciousTitleWords = GlobalConfig.getConfiguration().getSuspiciousTitleWords();
-        if(suspiciousTitleWords.isEmpty()){
-            return;
+        try {
+            String decodedTitle = MimeUtility.decodeText(model.getEmailHeader().getFieldValues(HeaderKey.SUBJECT).get(0));
+            List<String> foundWords = suspiciousTitleWords.stream()
+                    .map(String::toLowerCase)
+                    .filter(word -> decodedTitle.toLowerCase().contains(word))
+                    .map(word -> "Title contains word: " + word)
+                    .collect(Collectors.toList());
+            if (!foundWords.isEmpty()) {
+                suspiciousElements.addAll(foundWords);
+                if (suspiciousElements.size() > 4) {
+                    type = EmailType.SPAM;
+                } else {
+                    type = EmailType.SUSPICIOUS;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
-
     }
 
     private boolean isSuspiciousAttachment(BodyPart part, List<String> suspiciousExtensions) {
@@ -62,10 +78,10 @@ class Filter {
         return false;
     }
 
-    private String getAttachmentFileName(BodyPart part){
+    private String getAttachmentFileName(BodyPart part) {
         return part.getHeader()
                 .getFieldValues(HeaderKey.CONTENT_DISPOSITION).stream()
-                .filter( val -> val.startsWith("filename"))
+                .filter(val -> val.startsWith("filename"))
                 .map(Utils::getStringBetweenQuotationMarks)
                 .findFirst()
                 .get();
