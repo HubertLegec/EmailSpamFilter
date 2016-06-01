@@ -1,7 +1,9 @@
 package com.legec.tkom.core;
 
 import com.legec.tkom.core.configuration.GlobalConfig;
-import com.legec.tkom.core.model.*;
+import com.legec.tkom.core.model.BodyPart;
+import com.legec.tkom.core.model.EmailModel;
+import com.legec.tkom.core.model.EmailType;
 
 import javax.mail.internet.MimeUtility;
 import java.io.UnsupportedEncodingException;
@@ -10,7 +12,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.legec.tkom.core.Utils.*;
+import static com.legec.tkom.core.Utils.getStringBetweenQuotationMarks;
 import static com.legec.tkom.core.model.EmailType.*;
 import static com.legec.tkom.core.model.HeaderKey.*;
 
@@ -44,7 +46,7 @@ class Filter {
         }
         List<String> attachmentNames = model.getBodyParts().stream()
                 .filter(part -> isSuspiciousAttachment(part, suspiciousExtensions))
-                .map(part -> "Dangerous attachment: " +  getAttachmentFileName(part))
+                .map(part -> "Dangerous attachment: " +  part.getHeader().getAttachmentFileName())
                 .collect(Collectors.toList());
         if (!attachmentNames.isEmpty()) {
             suspiciousElements.addAll(attachmentNames);
@@ -103,31 +105,41 @@ class Filter {
     private void checkBodyParts(){
         if(model.isMultipart()) {
             model.getBodyParts().stream()
-                    .filter(part -> !isAttachment(part))
-                    .forEach(part -> analyzeBodyPart(part));
+                    .filter(part -> !part.isAttachment())
+                    .forEach(this::analyzeBodyPart);
         } else {
             analyzeBodyPart(model.getBodyParts().get(0));
         }
     }
 
     private void analyzeBodyPart(BodyPart part){
+        String contentType = part.getHeader().getContentType();
+        String contentEncoding = part.getHeader().getContentEncoding();
+        String charset = part.getHeader().getCharset();
+        if(contentType.contains("plain")){
+            analyzeBodyPartCriteria(part.getBody(), contentType);
+        } else if (contentType.contains("html")){
+            if(contentEncoding != null && charset != null){
+                String decodedBody = Utils.decodeString(part.getBody(), contentEncoding, charset);
+                analyzeBodyPartCriteria(decodedBody, contentType);
+            } else {
+                analyzeBodyPartCriteria(part.getBody(), contentType);
+            }
+        }
+    }
+
+    private void analyzeBodyPartCriteria(String bodyContent, String contentType){
         List<String> suspiciousWords = GlobalConfig.getConfiguration().getSuspiciousWords();
-        //TODO
     }
 
     private void containsListUnsubscribe(){
         boolean hasHeader = model.getEmailHeader().getHeaderParts()
                 .entrySet().stream()
-                .anyMatch( entry -> entry.getKey() == HeaderKey.LIST_UNSUBSCRIBE);
+                .anyMatch( entry -> entry.getKey() == LIST_UNSUBSCRIBE);
         if(hasHeader){
             setEmailType(EmailType.SPAM);
             suspiciousElements.add("Contains header: List-Unsubscribe");
         }
-    }
-
-    private boolean isAttachment(BodyPart part){
-        List<String> contentDispositionValues = part.getHeader().getFieldValues(CONTENT_DISPOSITION);
-        return contentDispositionValues != null && contentDispositionValues.contains("attachment");
     }
 
     private boolean isSuspiciousAttachment(BodyPart part, List<String> suspiciousExtensions) {
@@ -142,14 +154,7 @@ class Filter {
         return false;
     }
 
-    private String getAttachmentFileName(BodyPart part) {
-        return part.getHeader()
-                .getFieldValues(CONTENT_DISPOSITION).stream()
-                .filter(val -> val.startsWith("filename"))
-                .map(Utils::getStringBetweenQuotationMarks)
-                .findFirst()
-                .get();
-    }
+
 
     private void setEmailType(EmailType type){
         if(this.type == null ||

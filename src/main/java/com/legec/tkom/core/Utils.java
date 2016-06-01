@@ -11,7 +11,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 
-class Utils {
+public class Utils {
 
     static boolean isWhiteChar(char character) {
         return character == ' ' || character == '\t';
@@ -25,7 +25,7 @@ class Utils {
         return !isWhiteChar(character) && !isSemicolonColonOrNewLine(character);
     }
 
-    static String getStringBetweenQuotationMarks(String string) {
+    public static String getStringBetweenQuotationMarks(String string) {
         try {
             return string.substring(string.indexOf('"') + 1, string.lastIndexOf('"'));
         } catch (IndexOutOfBoundsException e) {
