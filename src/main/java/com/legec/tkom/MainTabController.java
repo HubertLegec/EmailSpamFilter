@@ -51,7 +51,7 @@ public class MainTabController {
             spamDetector.init(filePathTF.getText());
             if(spamDetector.process()){
                 Pair<EmailType, List<String>> result = spamDetector.getResult();
-                messagesModel.addAll(result.getValue());
+                messagesModel.setAll(result.getValue());
                 resultLabel.setText(result.getKey().name());
             }
         } catch (IOException e) {

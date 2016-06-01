@@ -34,7 +34,7 @@ public enum HeaderKey {
         return fromString(type.getPattern());
     }
 
-    public static HeaderKey fromString(String text) {
+    private static HeaderKey fromString(String text) {
         if (text != null) {
             for (HeaderKey k : HeaderKey.values()) {
                 if (text.equalsIgnoreCase(k.name)) {

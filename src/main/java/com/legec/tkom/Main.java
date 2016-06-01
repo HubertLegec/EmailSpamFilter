@@ -13,7 +13,6 @@ import java.io.IOException;
 
 public class Main extends Application {
     private Stage primaryStage;
-    private BorderPane rootLayout;
     @FXML
     private MainTabController mainTabController;
     @FXML
@@ -33,14 +32,14 @@ public class Main extends Application {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getResource("MainWindow.fxml"));
             loader.setController(this);
-            rootLayout = loader.load();
+            BorderPane rootLayout = loader.load();
 
             // Show the scene containing the root layout
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
             mainTabController.init(primaryStage, spamDetector);
-            settingsTabController.init(primaryStage);
+            settingsTabController.init();
         } catch (IOException e) {
             e.printStackTrace();
         }

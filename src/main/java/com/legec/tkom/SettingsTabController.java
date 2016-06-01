@@ -9,12 +9,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
-import javafx.stage.Stage;
 
 import java.util.Optional;
 
 public class SettingsTabController {
-    private Stage primaryStage;
     @FXML
     private ListView<String> suspiciousContLV;
     @FXML
@@ -38,8 +36,7 @@ public class SettingsTabController {
     private ObservableList<String> serversModel = FXCollections.observableArrayList();
     private ObservableList<String> titleModel = FXCollections.observableArrayList();
 
-    void init(Stage stage){
-        this.primaryStage = stage;
+    void init(){
         suspiciousContLV.setItems(contentModel);
         dangerousExtLV.setItems(extensionsModel);
         serversLV.setItems(serversModel);
