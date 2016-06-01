@@ -9,7 +9,7 @@ public class BodyPart {
     private String body;
 
 
-    public void addHeaderRow(HeaderKey key, List<String> values){
+    public void addHeaderRow(HeaderKey key, List<String> values) {
         header.addHeaderPart(key, values);
     }
 
@@ -25,7 +25,7 @@ public class BodyPart {
         return body;
     }
 
-    public boolean isAttachment(){
+    public boolean isAttachment() {
         List<String> contentDispositionValues = getHeader().getFieldValues(CONTENT_DISPOSITION);
         return contentDispositionValues != null && contentDispositionValues.contains("attachment");
     }

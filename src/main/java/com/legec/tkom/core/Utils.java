@@ -7,11 +7,14 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utils {
+    public static Pattern URL_PATTERN = Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
 
     static boolean isWhiteChar(char character) {
         return character == ' ' || character == '\t';
@@ -61,4 +64,14 @@ public class Utils {
             throw new RuntimeException("Unknown coding");
         }
     }
+
+    static List<String> getAllPatternOccurencesFromText(String text, Pattern pattern){
+        Matcher m = pattern.matcher(text);
+        List<String> result = new ArrayList<>();
+        while (m.find()){
+            result.add(m.group());
+        }
+        return result;
+    }
+
 }

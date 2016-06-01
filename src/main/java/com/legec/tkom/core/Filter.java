@@ -8,7 +8,10 @@ import com.legec.tkom.core.model.EmailType;
 import javax.mail.internet.MimeUtility;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -22,12 +25,16 @@ class Filter {
     private List<String> suspiciousElements = new ArrayList<>();
     private EmailType type = EmailType.OK;
 
+    private int suspiciousInTitle = 0;
+    private int suspiciousInBody = 0;
+
     Filter(EmailModel model) {
         this.model = model;
     }
 
     EmailType processEmail() {
         containsListUnsubscribe();
+        senderAddressConteinsNoReplay();
         checkTitle();
         checkAttachmentsExtensions();
         checkServers();
@@ -46,7 +53,7 @@ class Filter {
         }
         List<String> attachmentNames = model.getBodyParts().stream()
                 .filter(part -> isSuspiciousAttachment(part, suspiciousExtensions))
-                .map(part -> "Dangerous attachment: " +  part.getHeader().getAttachmentFileName())
+                .map(part -> "Dangerous attachment: " + part.getHeader().getAttachmentFileName())
                 .collect(Collectors.toList());
         if (!attachmentNames.isEmpty()) {
             suspiciousElements.addAll(attachmentNames);
@@ -71,9 +78,10 @@ class Filter {
                     setEmailType(SUSPICIOUS);
                 }
             }
-            if(MULTIPLE_EXCLAMATION_OR_QUESTION_MARK.matcher(decodedTitle).find()){
+            if (MULTIPLE_EXCLAMATION_OR_QUESTION_MARK.matcher(decodedTitle).find()) {
                 suspiciousElements.add("Multiple question or exclamation marks in subject");
-                if(foundWords.size() < 2){
+                suspiciousInTitle = foundWords.size();
+                if (foundWords.size() < 2) {
                     setEmailType(SUSPICIOUS);
                 } else {
                     setEmailType(SPAM);
@@ -88,22 +96,22 @@ class Filter {
         List<String> suspiciousServers = GlobalConfig.getConfiguration().getDangerousServers();
         List<String> cumulativeRoute = new ArrayList<>();
         model.getEmailHeader().getHeaderParts().entrySet().stream()
-                .filter( entry -> entry.getKey() == RECEIVED || entry.getKey() == X_RECEIVED)
-                .forEach( entry -> cumulativeRoute.addAll(entry.getValue()));
+                .filter(entry -> entry.getKey() == RECEIVED || entry.getKey() == X_RECEIVED)
+                .forEach(entry -> cumulativeRoute.addAll(entry.getValue()));
         List<String> foundServers = suspiciousServers.stream()
-                .filter( server ->
-                        cumulativeRoute.stream().anyMatch( value -> value.contains(server))
+                .filter(server ->
+                        cumulativeRoute.stream().anyMatch(value -> value.contains(server))
                 )
-                .map( server -> "Server on email route: " + server)
+                .map(server -> "Server on email route: " + server)
                 .collect(Collectors.toList());
-        if(!foundServers.isEmpty()){
+        if (!foundServers.isEmpty()) {
             suspiciousElements.addAll(foundServers);
             setEmailType(SPAM);
         }
     }
 
-    private void checkBodyParts(){
-        if(model.isMultipart()) {
+    private void checkBodyParts() {
+        if (model.isMultipart()) {
             model.getBodyParts().stream()
                     .filter(part -> !part.isAttachment())
                     .forEach(this::analyzeBodyPart);
@@ -112,14 +120,14 @@ class Filter {
         }
     }
 
-    private void analyzeBodyPart(BodyPart part){
+    private void analyzeBodyPart(BodyPart part) {
         String contentType = part.getHeader().getContentType();
         String contentEncoding = part.getHeader().getContentEncoding();
         String charset = part.getHeader().getCharset();
-        if(contentType.contains("plain")){
+        if (contentType.contains("plain")) {
             analyzeBodyPartCriteria(part.getBody(), contentType);
-        } else if (contentType.contains("html")){
-            if(contentEncoding != null && charset != null){
+        } else if (contentType.contains("html")) {
+            if (contentEncoding != null && charset != null) {
                 String decodedBody = Utils.decodeString(part.getBody(), contentEncoding, charset);
                 analyzeBodyPartCriteria(decodedBody, contentType);
             } else {
@@ -128,15 +136,50 @@ class Filter {
         }
     }
 
-    private void analyzeBodyPartCriteria(String bodyContent, String contentType){
+    private void analyzeBodyPartCriteria(String bodyContent, String contentType) {
         List<String> suspiciousWords = GlobalConfig.getConfiguration().getSuspiciousWords();
+        Map<String, Integer> wordsOccurrencesCounter = new HashMap<>();
+        suspiciousWords.forEach(word -> {
+            int counter = 0;
+            Matcher m = Pattern.compile(word).matcher(bodyContent);
+            while (m.find()) {
+                counter++;
+            }
+            if (counter > 0) {
+                wordsOccurrencesCounter.put(word, counter);
+            }
+        });
+        for (Map.Entry<String, Integer> e : wordsOccurrencesCounter.entrySet()) {
+            suspiciousInBody += e.getValue();
+            suspiciousElements.add("Word '" + e.getKey() + "' " + e.getValue() + " times in body");
+        }
+        if (suspiciousInBody > 5) {
+            setEmailType(EmailType.SPAM);
+        } else if (suspiciousInBody > 0) {
+            setEmailType(EmailType.SUSPICIOUS);
+        }
+        List<String> hyperlinksList = Utils.getAllPatternOccurencesFromText(bodyContent, Utils.URL_PATTERN);
+        if(hyperlinksList.size() > 0){
+            hyperlinksList.forEach( url -> suspiciousElements.add(url + " url in email body"));
+
+            if(contentType.contains("html") && suspiciousInBody > 0){
+                setEmailType(EmailType.SPAM);
+            } else {
+                setEmailType(EmailType.SUSPICIOUS);
+            }
+        }
     }
 
-    private void containsListUnsubscribe(){
-        boolean hasHeader = model.getEmailHeader().getHeaderParts()
-                .entrySet().stream()
-                .anyMatch( entry -> entry.getKey() == LIST_UNSUBSCRIBE);
-        if(hasHeader){
+    private void senderAddressConteinsNoReplay() {
+        String senderAddress = model.getEmailHeader().getSenderAddress();
+        if (senderAddress.toLowerCase().contains("noreplay")) {
+            setEmailType(EmailType.SUSPICIOUS);
+        }
+    }
+
+    private void containsListUnsubscribe() {
+        boolean hasHeader = model.getEmailHeader().containsListUnsubscribe();
+        if (hasHeader) {
             setEmailType(EmailType.SPAM);
             suspiciousElements.add("Contains header: List-Unsubscribe");
         }
@@ -154,12 +197,10 @@ class Filter {
         return false;
     }
 
-
-
-    private void setEmailType(EmailType type){
-        if(this.type == null ||
+    private void setEmailType(EmailType type) {
+        if (this.type == null ||
                 this.type == OK ||
-                (this.type == SUSPICIOUS && type == SPAM)){
+                (this.type == SUSPICIOUS && type == SPAM)) {
             this.type = type;
         }
     }
