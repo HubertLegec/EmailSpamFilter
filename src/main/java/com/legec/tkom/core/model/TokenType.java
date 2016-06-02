@@ -31,6 +31,7 @@ public enum TokenType {
     //------ others ------
     INDENTATION("\\t|' '{2,}(\\t|' ')*"),
     SPACE(" "),
+    TABULATION("\t"),
     NEW_LINE("\\n"),
     COLON(":"),
     SEMICOLON(";"),

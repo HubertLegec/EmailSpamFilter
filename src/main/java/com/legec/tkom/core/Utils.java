@@ -9,6 +9,7 @@ import org.apache.commons.codec.net.QuotedPrintableCodec;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +22,7 @@ public class Utils {
         return character == ' ' || character == '\t';
     }
 
-    static boolean isSemicolonColonOrNewLine(char character) {
+    private static boolean isSemicolonColonOrNewLine(char character) {
         return character == ';' || character == '\n' || character == ':';
     }
 
@@ -54,12 +55,11 @@ public class Utils {
         if ("base64".equals(coding)) {
             return new String(Base64.getDecoder().decode(value.getBytes(charset)));
         } else if ("quoted-printable".equals(coding)) {
-            QuotedPrintableCodec codec = new QuotedPrintableCodec(charset);
+            QuotedPrintableCodec codec = new QuotedPrintableCodec("iso-8859-2");
             try {
                 return codec.decode(value, charset);
             } catch (DecoderException e) {
-                e.printStackTrace();
-                return null;
+                return value;
             }
         } else {
             throw new RuntimeException("Unknown coding");
@@ -73,6 +73,19 @@ public class Utils {
             result.add(m.group());
         }
         return result;
+    }
+
+    static long stringIntersection(String s1, String s2){
+        HashSet<Character> h1 = new HashSet<>();
+        HashSet<Character> h2 = new HashSet<>();
+        for(int i = 0; i < s1.length(); i++) {
+            h1.add(s1.charAt(i));
+        }
+        for(int i = 0; i < s2.length(); i++) {
+            h2.add(s2.charAt(i));
+        }
+        h1.retainAll(h2);
+        return h1.stream().count();
     }
 
 }

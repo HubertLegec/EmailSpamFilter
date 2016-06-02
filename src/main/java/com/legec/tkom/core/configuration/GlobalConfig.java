@@ -27,6 +27,9 @@ public class GlobalConfig {
     }
 
     public static Configuration getConfiguration(){
+        if(configuration == null) {
+            configuration = new Configuration();
+        }
         return configuration;
     }
 

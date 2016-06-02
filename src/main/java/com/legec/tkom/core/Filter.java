@@ -2,6 +2,7 @@ package com.legec.tkom.core;
 
 import com.legec.tkom.core.configuration.GlobalConfig;
 import com.legec.tkom.core.model.BodyPart;
+import com.legec.tkom.core.model.EmailHeader;
 import com.legec.tkom.core.model.EmailModel;
 import com.legec.tkom.core.model.EmailType;
 
@@ -24,12 +25,14 @@ class Filter {
     private EmailModel model;
     private List<String> suspiciousElements = new ArrayList<>();
     private EmailType type = EmailType.OK;
+    private EmailRouteChecker routeChecker;
 
     private int suspiciousInTitle = 0;
     private int suspiciousInBody = 0;
 
     Filter(EmailModel model) {
         this.model = model;
+        this.routeChecker = new EmailRouteChecker(this, model.getEmailHeader());
     }
 
     EmailType processEmail() {
@@ -39,6 +42,9 @@ class Filter {
         checkAttachmentsExtensions();
         checkServers();
         checkBodyParts();
+        if (GlobalConfig.getConfiguration().isCheckRoute()) {
+            routeChecker.check();
+        }
         return type;
     }
 
@@ -114,25 +120,21 @@ class Filter {
         if (model.isMultipart()) {
             model.getBodyParts().stream()
                     .filter(part -> !part.isAttachment())
-                    .forEach(this::analyzeBodyPart);
+                    .forEach(part -> analyzeBodyPart(part, part.getHeader()));
         } else {
-            analyzeBodyPart(model.getBodyParts().get(0));
+            analyzeBodyPart(model.getBodyParts().get(0), model.getEmailHeader());
         }
     }
 
-    private void analyzeBodyPart(BodyPart part) {
-        String contentType = part.getHeader().getContentType();
-        String contentEncoding = part.getHeader().getContentEncoding();
-        String charset = part.getHeader().getCharset();
-        if (contentType.contains("plain")) {
+    private void analyzeBodyPart(BodyPart part, EmailHeader header) {
+        String contentType = header.getContentType();
+        String contentEncoding = header.getContentEncoding();
+        String charset = header.getCharset();
+        if (contentEncoding != null && charset != null) {
+            String decodedBody = Utils.decodeString(part.getBody(), contentEncoding, charset);
+            analyzeBodyPartCriteria(decodedBody, contentType);
+        } else {
             analyzeBodyPartCriteria(part.getBody(), contentType);
-        } else if (contentType.contains("html")) {
-            if (contentEncoding != null && charset != null) {
-                String decodedBody = Utils.decodeString(part.getBody(), contentEncoding, charset);
-                analyzeBodyPartCriteria(decodedBody, contentType);
-            } else {
-                analyzeBodyPartCriteria(part.getBody(), contentType);
-            }
         }
     }
 
@@ -159,19 +161,19 @@ class Filter {
             setEmailType(EmailType.SUSPICIOUS);
         }
         List<String> hyperlinksList = Utils.getAllPatternOccurencesFromText(bodyContent, Utils.URL_PATTERN);
-        if(hyperlinksList.size() > 0){
-            hyperlinksList.forEach( url -> suspiciousElements.add(url + " url in email body"));
-            if(contentType.contains("html") && (suspiciousInBody > 0 || suspiciousInTitle > 0)){
+        if (hyperlinksList.size() > 0) {
+            hyperlinksList.forEach(url -> suspiciousElements.add(url + " url in email body"));
+            if (contentType.contains("html") && (suspiciousInBody > 0 || suspiciousInTitle > 0)) {
                 setEmailType(EmailType.SPAM);
             } else {
                 setEmailType(EmailType.SUSPICIOUS);
             }
         }
-        if(contentType.contains("html")){
+        if (contentType.contains("html")) {
             List<String> imgHyperlinks = Utils.getAllPatternOccurencesFromText(bodyContent, Utils.HTML_IMG_URL);
-            if(imgHyperlinks.size() > 0){
+            if (imgHyperlinks.size() > 0) {
                 suspiciousElements.add("Email contains " + imgHyperlinks.size() + " images with hyperlinks");
-                if(suspiciousInBody > 0 || suspiciousInTitle > 0){
+                if (suspiciousInBody > 0 || suspiciousInTitle > 0) {
                     setEmailType(EmailType.SPAM);
                 } else {
                     setEmailType(EmailType.SUSPICIOUS);
@@ -207,7 +209,11 @@ class Filter {
         return false;
     }
 
-    private void setEmailType(EmailType type) {
+    void addSuspiciousElement(String val) {
+        suspiciousElements.add(val);
+    }
+
+    void setEmailType(EmailType type) {
         if (this.type == null ||
                 this.type == OK ||
                 (this.type == SUSPICIOUS && type == SPAM)) {

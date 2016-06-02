@@ -8,7 +8,7 @@ public class Configuration {
     private List<String> suspiciousWords = new ArrayList<>();
     private List<String> suspiciousTitleWords = new ArrayList<>();
     private List<String> dangerousServers = new ArrayList<>();
-
+    private boolean checkRoute;
 
     public Configuration() {}
 
@@ -42,5 +42,13 @@ public class Configuration {
 
     public void setDangerousServers(List<String> dangerousServers) {
         this.dangerousServers = dangerousServers;
+    }
+
+    public boolean isCheckRoute() {
+        return checkRoute;
+    }
+
+    public void setCheckRoute(boolean checkRoute) {
+        this.checkRoute = checkRoute;
     }
 }

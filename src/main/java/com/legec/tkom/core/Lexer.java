@@ -40,6 +40,9 @@ class Lexer {
             } else if(processedChar == ' ') {
                 inputTextReader.getNextCharacter();
                 return new Token(SPACE, currentTokenPosition);
+            } else if (processedChar == '\t') {
+                inputTextReader.getNextCharacter();
+                return new Token(TABULATION, currentTokenPosition);
             } else {
                 return processContent();
             }

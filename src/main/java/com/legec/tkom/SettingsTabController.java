@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 
@@ -30,6 +31,8 @@ public class SettingsTabController {
     private Button removeExtensionBT;
     @FXML
     private Button removeContentBT;
+    @FXML
+    private CheckBox checkRoute;
 
     private ObservableList<String> contentModel = FXCollections.observableArrayList();
     private ObservableList<String> extensionsModel = FXCollections.observableArrayList();
@@ -45,6 +48,11 @@ public class SettingsTabController {
         removeExtensionBT.disableProperty().bind(dangerousExtLV.getSelectionModel().selectedItemProperty().isNull());
         removeTitleBT.disableProperty().bind(suspiciousTitleLV.getSelectionModel().selectedItemProperty().isNull());
         removeServerBT.disableProperty().bind(serversLV.getSelectionModel().selectedItemProperty().isNull());
+    }
+
+    @FXML
+    private void onCheckboxChange(){
+        updateGlobalConfig();
     }
 
     @FXML
@@ -129,6 +137,7 @@ public class SettingsTabController {
         titleModel.setAll(configuration.getSuspiciousTitleWords());
         extensionsModel.setAll(configuration.getDangerousExtensions());
         serversModel.setAll(configuration.getDangerousServers());
+        checkRoute.setSelected(configuration.isCheckRoute());
     }
 
     Configuration getConfig(){
@@ -137,6 +146,7 @@ public class SettingsTabController {
         configuration.setDangerousServers(serversModel);
         configuration.setSuspiciousTitleWords(titleModel);
         configuration.setSuspiciousWords(contentModel);
+        configuration.setCheckRoute(checkRoute.isSelected());
         return configuration;
     }
 

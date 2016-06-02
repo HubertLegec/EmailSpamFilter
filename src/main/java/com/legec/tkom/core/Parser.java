@@ -63,7 +63,7 @@ class Parser {
     private void checkIfBodyEnd() {
         do {
             nextToken();
-        } while (isTokenTypeIn(token, asList(SPACE, NEW_LINE)));
+        } while (isTokenTypeIn(token, asList(SPACE, TABULATION, NEW_LINE)));
         if (token != null) {
             throw new ParserException(END_OF_EMAIL_EXPECTED, lexer.getTokenPosition());
         }
@@ -105,7 +105,7 @@ class Parser {
         List<String> values = new ArrayList<>();
         while(true) {
             readHeaderRowValue(key, values);
-            if (isTokenTypeIn(token, asList(SPACE, INDENTATION))) {
+            if (isTokenTypeIn(token, asList(SPACE, TABULATION, INDENTATION))) {
                 nextToken();
             } else {
                 break;
@@ -124,7 +124,7 @@ class Parser {
     private void readHeaderRowValue(HeaderKey key, List<String> values) {
         StringBuilder builder = new StringBuilder();
         while (!isTokenTypeIn(token, asList(NEW_LINE, SEMICOLON))) {
-            if (isTokenTypeIn(token, asList(SPACE, STRING))) {
+            if (isTokenTypeIn(token, asList(SPACE, TABULATION, STRING))) {
                 builder.append(token.getWrappedValue());
             } else if (isHeaderKeyIn(key, asList(HeaderKey.CONTENT_TYPE, HeaderKey.CONTENT_TRANSFER_ENCODING, HeaderKey.CONTENT_DISPOSITION))) {
                 addKeyValues(builder, key);
@@ -158,7 +158,7 @@ class Parser {
 
     private void goToValue() {
         nextToken();
-        while (isTokenTypeIn(token, asList(COLON, SPACE, INDENTATION))) {
+        while (isTokenTypeIn(token, asList(COLON, SPACE, INDENTATION, TABULATION))) {
             nextToken();
         }
     }

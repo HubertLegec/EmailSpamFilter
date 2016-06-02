@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -25,6 +26,8 @@ public class MainTabController {
     private Label resultLabel;
     @FXML
     private ListView<String> messagesLV;
+    @FXML
+    private Button checkMessageBT;
 
     private ObservableList<String> messagesModel = FXCollections.observableArrayList();
 
@@ -34,6 +37,7 @@ public class MainTabController {
         this.primaryStage = stage;
         this.spamDetector = spamDetector;
         messagesLV.setItems(messagesModel);
+        checkMessageBT.disableProperty().bind(filePathTF.textProperty().isEmpty());
     }
 
     @FXML
