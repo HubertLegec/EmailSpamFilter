@@ -34,7 +34,7 @@ class Filter {
 
     EmailType processEmail() {
         containsListUnsubscribe();
-        senderAddressConteinsNoReplay();
+        senderAddressContainsNoReplay();
         checkTitle();
         checkAttachmentsExtensions();
         checkServers();
@@ -161,16 +161,26 @@ class Filter {
         List<String> hyperlinksList = Utils.getAllPatternOccurencesFromText(bodyContent, Utils.URL_PATTERN);
         if(hyperlinksList.size() > 0){
             hyperlinksList.forEach( url -> suspiciousElements.add(url + " url in email body"));
-
-            if(contentType.contains("html") && suspiciousInBody > 0){
+            if(contentType.contains("html") && (suspiciousInBody > 0 || suspiciousInTitle > 0)){
                 setEmailType(EmailType.SPAM);
             } else {
                 setEmailType(EmailType.SUSPICIOUS);
             }
         }
+        if(contentType.contains("html")){
+            List<String> imgHyperlinks = Utils.getAllPatternOccurencesFromText(bodyContent, Utils.HTML_IMG_URL);
+            if(imgHyperlinks.size() > 0){
+                suspiciousElements.add("Email contains " + imgHyperlinks.size() + " images with hyperlinks");
+                if(suspiciousInBody > 0 || suspiciousInTitle > 0){
+                    setEmailType(EmailType.SPAM);
+                } else {
+                    setEmailType(EmailType.SUSPICIOUS);
+                }
+            }
+        }
     }
 
-    private void senderAddressConteinsNoReplay() {
+    private void senderAddressContainsNoReplay() {
         String senderAddress = model.getEmailHeader().getSenderAddress();
         if (senderAddress.toLowerCase().contains("noreplay")) {
             setEmailType(EmailType.SUSPICIOUS);
