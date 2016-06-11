@@ -141,13 +141,7 @@ public class SettingsTabController {
     }
 
     Configuration getConfig(){
-        Configuration configuration = new Configuration();
-        configuration.setDangerousExtensions(extensionsModel);
-        configuration.setDangerousServers(serversModel);
-        configuration.setSuspiciousTitleWords(titleModel);
-        configuration.setSuspiciousWords(contentModel);
-        configuration.setCheckRoute(checkRoute.isSelected());
-        return configuration;
+        return new Configuration(extensionsModel, contentModel, titleModel, serversModel, checkRoute.isSelected());
     }
 
     private void updateGlobalConfig(){

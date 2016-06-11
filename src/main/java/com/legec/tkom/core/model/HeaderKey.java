@@ -26,10 +26,6 @@ public enum HeaderKey {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public static HeaderKey getFromTokenType(TokenType type){
         return fromString(type.getPattern());
     }

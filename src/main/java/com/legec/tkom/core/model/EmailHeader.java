@@ -14,12 +14,10 @@ import static com.legec.tkom.core.model.HeaderKey.*;
 public class EmailHeader {
     private Map<HeaderKey, List<String>> headerParts = new HashMap<>();
 
-    public void addHeaderPart(HeaderKey key, List<String> values) {
+    void addHeaderPart(HeaderKey key, List<String> values) {
         List<String> elements = headerParts.get(key);
         if (elements != null) {
-            for (String value : values) {
-                elements.add(value);
-            }
+            elements.addAll(values);
         } else {
             elements = values;
             headerParts.put(key, elements);
@@ -32,10 +30,6 @@ public class EmailHeader {
 
     public Map<HeaderKey, List<String>> getHeaderParts() {
         return headerParts;
-    }
-
-    public boolean isEmpty() {
-        return headerParts.isEmpty();
     }
 
     public boolean containsListUnsubscribe() {
@@ -62,20 +56,20 @@ public class EmailHeader {
     }
 
     public String getContentType() {
-        return getHeaderRowValue(TokenType.CONTENT_TYPE_VAL.getPattern(), CONTENT_TYPE);
+        return getHeaderRowValue(TokenType.CONTENT_TYPE_VAL, CONTENT_TYPE);
     }
 
     public String getContentEncoding() {
-        return getHeaderRowValue(TokenType.ENCODING_VAL.getPattern(), CONTENT_TRANSFER_ENCODING);
+        return getHeaderRowValue(TokenType.ENCODING_VAL, CONTENT_TRANSFER_ENCODING);
     }
 
     public String getCharset() {
-        String charset = getHeaderRowValue(TokenType.CHARSET.getPattern(), CONTENT_TYPE);
+        String charset = getHeaderRowValue(TokenType.CHARSET, CONTENT_TYPE);
         return charset != null ? getStringBetweenQuotationMarks(charset) : null;
     }
 
-    private String getHeaderRowValue(String patternString, HeaderKey key) {
-        Pattern pattern = Pattern.compile(patternString);
+    private String getHeaderRowValue(TokenType tokenType, HeaderKey key) {
+        Pattern pattern = Pattern.compile(tokenType.getPattern());
         return getHeaderParts()
                 .entrySet().stream()
                 .filter(row -> row.getKey() == key)

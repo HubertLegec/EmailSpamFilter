@@ -12,6 +12,14 @@ public class Configuration {
 
     public Configuration() {}
 
+    public Configuration(List<String> dangerousExtensions, List<String> suspiciousWords, List<String> suspiciousTitleWords, List<String> dangerousServers, boolean checkRoute) {
+        this.dangerousExtensions = dangerousExtensions;
+        this.suspiciousWords = suspiciousWords;
+        this.suspiciousTitleWords = suspiciousTitleWords;
+        this.dangerousServers = dangerousServers;
+        this.checkRoute = checkRoute;
+    }
+
     public List<String> getDangerousExtensions() {
         return dangerousExtensions;
     }

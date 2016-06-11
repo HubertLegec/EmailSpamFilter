@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -55,7 +56,7 @@ public class Main extends Application {
             GlobalConfig.loadConfiguration();
             settingsTabController.loadConfiguration(GlobalConfig.getConfiguration());
         } catch (IOException e) {
-            e.printStackTrace();
+            showDialog("Problem occurred during loading configuration. Check if <config.conf> file exist in app directory");
         }
     }
 
@@ -65,8 +66,16 @@ public class Main extends Application {
         try {
             GlobalConfig.saveConfiguration();
         } catch (IOException e) {
-            e.printStackTrace();
+            showDialog("Problem occurred during saving configuration");
         }
+    }
+
+    private void showDialog(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Settings error");
+        alert.setContentText(message);
+        alert.show();
     }
 }
 

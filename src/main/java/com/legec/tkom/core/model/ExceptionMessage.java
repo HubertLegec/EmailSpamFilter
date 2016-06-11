@@ -10,7 +10,6 @@ public enum ExceptionMessage {
     END_OF_EMAIL_EXPECTED("End of email expected"),
     UNEXPECTED_HEADER_ROW_VALUE("Unexpected header row value");
 
-
     private String message;
 
     ExceptionMessage(String message) {

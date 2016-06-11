@@ -8,7 +8,6 @@ public class BodyPart {
     private EmailHeader header = new EmailHeader();
     private String body;
 
-
     public void addHeaderRow(HeaderKey key, List<String> values) {
         header.addHeaderPart(key, values);
     }

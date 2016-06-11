@@ -2,6 +2,7 @@ package com.legec.tkom;
 
 import com.legec.tkom.core.SpamDetector;
 import com.legec.tkom.core.model.EmailType;
+import com.legec.tkom.core.model.ParserException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -57,6 +58,13 @@ public class MainTabController {
                 Pair<EmailType, List<String>> result = spamDetector.getResult();
                 messagesModel.setAll(result.getValue());
                 resultLabel.setText(result.getKey().name());
+            } else {
+                ParserException exception = spamDetector.getException();
+                resultLabel.setText("ERROR");
+                messagesModel.clear();
+                messagesModel.add(exception.getMessage());
+                messagesModel.add("Line: " + exception.getPosition().getLine());
+                messagesModel.add("Position in line: " + exception.getPosition().getPositionInLine());
             }
         } catch (IOException e) {
             e.printStackTrace();
