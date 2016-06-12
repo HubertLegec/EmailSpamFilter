@@ -91,7 +91,7 @@ public class SettingsTabController {
 
     @FXML
     private void onAddServer(ActionEvent actionEvent) {
-        String val = getInputTextFromDialog("Suspicious server", "Type server IP may be dangerous", "IP address");
+        String val = getInputTextFromDialog("Suspicious server", "Type server address that may be dangerous", "Server address");
         if(val != null){
             serversModel.add(val);
             updateGlobalConfig();

@@ -143,7 +143,7 @@ class Filter {
         Map<String, Integer> wordsOccurrencesCounter = new HashMap<>();
         suspiciousWords.forEach(word -> {
             int counter = 0;
-            Matcher m = Pattern.compile(word).matcher(bodyContent);
+            Matcher m = Pattern.compile(word.toLowerCase()).matcher(bodyContent.toLowerCase());
             while (m.find()) {
                 counter++;
             }
@@ -155,7 +155,7 @@ class Filter {
             suspiciousInBody += e.getValue();
             suspiciousElements.add("Word '" + e.getKey() + "' " + e.getValue() + " times in body");
         }
-        if (suspiciousInBody > 5) {
+        if (suspiciousInBody >= 5) {
             setEmailType(EmailType.SPAM);
         } else if (suspiciousInBody > 0) {
             setEmailType(EmailType.SUSPICIOUS);

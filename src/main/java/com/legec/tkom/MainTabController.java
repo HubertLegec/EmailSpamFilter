@@ -7,10 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -67,7 +64,15 @@ public class MainTabController {
                 messagesModel.add("Position in line: " + exception.getPosition().getPositionInLine());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            showDialog("Error during reading input file!");
         }
+    }
+
+    private void showDialog(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Input file error");
+        alert.setContentText(message);
+        alert.show();
     }
 }

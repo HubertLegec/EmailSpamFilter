@@ -16,7 +16,7 @@ public enum TokenType {
     CONTENT_TYPE("Content-Type"),
     CONTENT_TRANSFER_ENCODING("Content-Transfer-Encoding"),
     CONTENT_DISPOSITION("Content-Disposition"),
-    MESSAGE_ID("Message-ID"),
+    MESSAGE_ID("Message-Id"),
     REPLY_TO("Reply-To"),
     SENDER("Sender"),
     LIST_UNSUBSCRIBE("List-Unsubscribe"),
