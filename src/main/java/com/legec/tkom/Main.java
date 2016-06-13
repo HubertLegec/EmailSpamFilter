@@ -1,5 +1,6 @@
 package com.legec.tkom;
 
+import com.google.gson.JsonParseException;
 import com.legec.tkom.core.SpamDetector;
 import com.legec.tkom.core.configuration.GlobalConfig;
 import javafx.application.Application;
@@ -55,8 +56,8 @@ public class Main extends Application {
         try {
             GlobalConfig.loadConfiguration();
             settingsTabController.loadConfiguration(GlobalConfig.getConfiguration());
-        } catch (IOException e) {
-            showDialog("Problem occurred during loading configuration. Check if <config.conf> file exist in app directory");
+        } catch (IOException | JsonParseException e) {
+            showDialog("Problem occurred during loading configuration. Check if <config.conf> file exist in app directory and has valid structure");
         }
     }
 
